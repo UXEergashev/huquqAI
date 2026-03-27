@@ -1,346 +1,371 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adalat AI — Huquqiy Yordamchi</title>
-  <meta name="description" content="Adalat AI — O'zbekiston uchun AI asosidagi huquqiy maslahat platformasi."/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+  <meta name="description" content="Adalat AI — O'zbekiston Konstitutsiyasi asosida aniq huquqiy maslahat beruvchi AI platformasi." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ===== NAVBAR ===== -->
-<nav class="navbar" id="navbar">
-  <div class="nav-inner">
-    <div class="logo" onclick="goPage('home')">⚖️ <span>Adalat <b>AI</b></span></div>
-    <div class="nav-links" id="navLinks">
-      <a href="#" class="nl" onclick="goPage('home')">Bosh sahifa</a>
-      <a href="#" class="nl" onclick="goPage('chat')">AI Maslahat</a>
-      <a href="#" class="nl" onclick="goPage('lawyers')">Advokatlar</a>
-    </div>
-    <div class="nav-right" id="navRight">
-      <!-- filled by JS based on auth state -->
-    </div>
-    <button class="burger" onclick="toggleNav()">☰</button>
-  </div>
-</nav>
-
-<!-- ===== HOME ===== -->
-<div id="pg-home" class="pg active">
-  <section class="hero">
-    <h1>Huquqiy muammongизga <span class="hl">AI yechim</span></h1>
-    <p class="hero-sub">Savolingizni yozing — AI oddiy tilda tushuntiradi, kerak bo'lsa advokat topib beradi</p>
-    <div class="search-row">
-      <input id="heroQ" type="text" placeholder="Masalan: Mehnat shartnomasim buzildi, nima qilaman?" onkeydown="if(event.key==='Enter')heroSearch()"/>
-      <button onclick="heroSearch()">Javob olish →</button>
-    </div>
-    <div class="quick-tags">
-      <span onclick="quickAsk('Mehnat shartnomasim buzildi, nima qilaman?')">💼 Mehnat</span>
-      <span onclick="quickAsk('Uy ijarasi bo\'yicha muammom bor')">🏠 Mulk</span>
-      <span onclick="quickAsk('Ajralish va aliment masalasi')">👨‍👩‍👧 Oila</span>
-      <span onclick="quickAsk('IE yoki MChJ ochmoqchiman')">📋 Biznes</span>
-      <span onclick="quickAsk('Jinoyat ishida nima qilishim kerak?')">⚖️ Jinoiy</span>
-    </div>
-  </section>
-
-  <section class="stats-row">
-    <div class="stat"><strong>12,400+</strong><span>Hal qilingan masala</span></div>
-    <div class="stat"><strong>340+</strong><span>Tasdiqlangan advokat</span></div>
-    <div class="stat"><strong>4.9 ⭐</strong><span>Foydalanuvchi bahosi</span></div>
-  </section>
-
-  <section class="steps-sec">
-    <h2>Qanday ishlaydi?</h2>
-    <div class="steps">
-      <div class="step"><div class="step-n">1</div><div class="step-ico">✍️</div><h3>Savol yozing</h3><p>Muammongizni o'z so'zlaringiz bilan aytib bering</p></div>
-      <div class="step-arr">→</div>
-      <div class="step"><div class="step-n">2</div><div class="step-ico">🤖</div><h3>AI tahlil qiladi</h3><p>Sun'iy intellekt vaziyatingizni tushunib yo'l ko'rsatadi</p></div>
-      <div class="step-arr">→</div>
-      <div class="step"><div class="step-n">3</div><div class="step-ico">⚖️</div><h3>Advokat toping</h3><p>Kerak bo'lsa tasdiqlangan advokatlar bilan bog'laning</p></div>
-    </div>
-  </section>
-
-  <section class="features-sec">
-    <h2>Nima taklif qilamiz?</h2>
-    <div class="feats">
-      <div class="feat"><div class="feat-ico">🧠</div><h3>AI Yordamchi</h3><p>24/7 huquqiy savollaringizga oddiy tilda javob beradi</p></div>
-      <div class="feat"><div class="feat-ico">📍</div><h3>Hududiy Moslashuv</h3><p>Joylashuvingizga qarab yaqin advokatlarni ko'rsatadi</p></div>
-      <div class="feat"><div class="feat-ico">🛡️</div><h3>Tasdiqlangan Advokatlar</h3><p>Faqat litsenziyalangan huquqshunoslar</p></div>
-      <div class="feat"><div class="feat-ico">🔒</div><h3>Ma'lumot Himoyasi</h3><p>Suhbatlaringiz shifrlangan va himoyalangan</p></div>
-    </div>
-  </section>
-
-  <section class="pricing-sec">
-    <h2>Narxlar</h2>
-    <div class="plans">
-      <div class="plan">
-        <div class="plan-name">Bepul</div>
-        <div class="plan-price">0 so'm</div>
-        <ul>
-          <li class="y">✓ Kuniga 5 ta AI savol</li>
-          <li class="y">✓ Advokatlar ro'yxati</li>
-          <li class="n">✗ Advokat bilan chat yo'q</li>
-          <li class="n">✗ Ustuvor javob yo'q</li>
-        </ul>
-        <button onclick="goPage('chat')">Boshlash</button>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="logo" onclick="AUTH.user ? goPage('chat') : showRegPage()">⚖️ <span>Adalat <b>AI</b></span></div>
+      <div class="nav-links" id="navLinks">
+        <a href="#" class="nl" onclick="goPage('chat')">🤖 AI Maslahat</a>
+        <a href="#" class="nl" onclick="goPage('docs')">📄 Hujjatlar</a>
+        <a href="#" class="nl" onclick="goPage('lawyers')">⚖️ Advokatlar</a>
+        <a href="#" class="nl" onclick="goPage('premium')">👑 Premium</a>
       </div>
-      <div class="plan plan-best">
-        <div class="plan-badge">Eng mashhur</div>
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">49,000 so'm<span>/oy</span></div>
-        <ul>
-          <li class="y">✓ Cheksiz AI savol</li>
-          <li class="y">✓ Advokat bilan chat</li>
-          <li class="y">✓ 30 daqiqa javob kafolati</li>
-          <li class="y">✓ Hujjatlar tahlili</li>
-        </ul>
-        <button onclick="openPremium()">Premium olish 👑</button>
-      </div>
-      <div class="plan">
-        <div class="plan-name">Biznes</div>
-        <div class="plan-price">249,000 so'm<span>/oy</span></div>
-        <ul>
-          <li class="y">✓ 10 ta foydalanuvchi</li>
-          <li class="y">✓ Maxsus advokat</li>
-          <li class="y">✓ Shartnomalar tahlili</li>
-          <li class="y">✓ Prioritet qo'llab-quvvatlash</li>
-        </ul>
-        <button onclick="openAuth()">Bog'lanish</button>
-      </div>
+      <div class="nav-right" id="navRight"></div>
+      <button class="burger" onclick="toggleNav()">☰</button>
     </div>
-  </section>
+  </nav>
 
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="logo">⚖️ <span>Adalat <b>AI</b></span></div>
-      <p>© 2024 Adalat AI — O'zbekiston uchun huquqiy yordamchi</p>
-      <p class="disc">⚠️ Platforma umumiy huquqiy ma'lumot beradi. Aniq maslahat uchun advokatga murojaat qiling.</p>
-    </div>
-  </footer>
-</div>
-
-<!-- ===== CHAT PAGE ===== -->
-<div id="pg-chat" class="pg">
-  <div class="chat-wrap">
-    <div class="chat-side" id="chatSide">
-      <div class="cs-logo" onclick="goPage('home')">⚖️ <span>Adalat <b>AI</b></span></div>
-      <button class="new-btn" onclick="newChat()">+ Yangi savol</button>
-      <div class="cs-label">Huquq sohalari</div>
-      <div class="cs-topics">
-        <button onclick="topicAsk('mehnat')">💼 Mehnat huquqi</button>
-        <button onclick="topicAsk('oila')">👨‍👩‍👧 Oilaviy huquq</button>
-        <button onclick="topicAsk('mulk')">🏠 Mulk va uy-joy</button>
-        <button onclick="topicAsk('biznes')">📋 Biznes huquqi</button>
-        <button onclick="topicAsk('jinoyat')">⚖️ Jinoiy huquq</button>
-        <button onclick="topicAsk('isteMol')">🛒 Iste'molchi</button>
-      </div>
-      <div class="cs-label" style="margin-top:12px">Tez savollar</div>
-      <div class="cs-quick">
-        <div onclick="sendQ('Ishdan noqonuniy bo\'shatilsam nima qilaman?')">Noqonuniy ishdan bo'shatish</div>
-        <div onclick="sendQ('Aliment undirish uchun qanday murojaat qilaman?')">Aliment masalasi</div>
-        <div onclick="sendQ('Uy ijarasi shartnomasini qanday tuzish kerak?')">Ijara shartnomasi</div>
-        <div onclick="sendQ('IE yoki MChJ ochish uchun nima kerak?')">Biznes ochish</div>
-      </div>
-      <div class="cs-footer">
-        <button onclick="goPage('lawyers')">⚖️ Advokatlar bazasi</button>
-        <button onclick="openPremium()" class="prem-btn">👑 Premium</button>
-      </div>
-    </div>
-
-    <div class="chat-main">
-      <div class="chat-bar">
-        <button class="back-b" onclick="goPage('home')">← Orqaga</button>
-        <div class="chat-status"><span class="dot"></span>AI Yordamchi faol</div>
-        <button class="lawyers-b" onclick="goPage('lawyers')">👤 Advokatlar</button>
-      </div>
-      <div class="msgs" id="msgs"></div>
-      <div class="disc-bar">⚠️ Bu umumiy huquqiy ma'lumot. Aniq maslahat uchun litsenziyalangan advokatga murojaat qiling.</div>
-      <div class="input-area">
-        <div class="input-box">
-          <textarea id="inp" placeholder="Huquqiy savolingizni yozing..." rows="1"
-            onkeydown="handleKey(event)" oninput="autoH(this)"></textarea>
-          <button id="sendBtn" onclick="sendMsg()">➤</button>
+  <!-- ===== AUTH PAGE ===== -->
+  <div id="pg-auth" class="pg">
+    <div class="auth-page-wrap">
+      <div class="auth-brand">
+        <div class="auth-brand-logo">⚖️ <span>Adalat <b>AI</b></span></div>
+        <h1 class="auth-brand-title">O'zbekiston Huquqiy <span class="hl">AI Yordamchi</span></h1>
+        <p class="auth-brand-sub">Konstitutsiya va qonunlar asosida aniq manbalar bilan javob • Hujjat generator • 340+ advokat</p>
+        <div class="auth-feats">
+          <div class="auth-feat"><span class="af-ico">📖</span><div><strong>Konstitutsiya asosida</strong><p>Har javobda aniq modda raqami</p></div></div>
+          <div class="auth-feat"><span class="af-ico">📄</span><div><strong>Hujjat Generatori</strong><p>15+ shablon, PDF yuklab olish</p></div></div>
+          <div class="auth-feat"><span class="af-ico">🎤</span><div><strong>Ovozli Yordamchi</strong><p>Gaplab savol bering, AI ovoz bilan javob</p></div></div>
+          <div class="auth-feat"><span class="af-ico">⚖️</span><div><strong>340+ Advokat</strong><p>Tasdiqlangan huquqshunoslar</p></div></div>
         </div>
-        <div class="input-hint">Enter — yuborish &nbsp;|&nbsp; Shift+Enter — yangi qator</div>
+        <div class="auth-stats-row">
+          <div class="auth-stat"><strong>30+</strong><span>Modda</span></div>
+          <div class="auth-stat"><strong>15+</strong><span>Shablon</span></div>
+          <div class="auth-stat"><strong>4.9⭐</strong><span>Baho</span></div>
+        </div>
+      </div>
+      <div class="auth-form-side">
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <button id="authTabReg" class="atab active" onclick="switchAuthTab('reg')">Ro'yxatdan o'tish</button>
+            <button id="authTabLogin" class="atab" onclick="switchAuthTab('login')">Kirish</button>
+          </div>
+          <div id="authRegForm">
+            <h2>Hisob yarating</h2>
+            <p class="auth-sub">Bepul — 2 daqiqada tayyor!</p>
+            <div class="fgroup"><label>Ism va Familiya</label><input id="authRegName" type="text" placeholder="Ismingiz Familiyangiz" class="finput"/></div>
+            <div class="fgroup"><label>Telefon raqam</label><input id="authRegPhone" type="tel" placeholder="+998901234567" class="finput"/></div>
+            <div class="fgroup"><label>Parol</label><input id="authRegPass" type="password" placeholder="Kamida 6 ta belgi" class="finput"/></div>
+            <div class="fgroup"><label>Parolni tasdiqlang</label><input id="authRegPass2" type="password" placeholder="Parolni qaytaring" class="finput"/></div>
+            <div class="ferr" id="authRegErr"></div>
+            <button class="fsubmit" onclick="doAuthRegister()">Ro'yxatdan o'tish →</button>
+            <p class="auth-hint">Hisobingiz bormi? <a onclick="switchAuthTab('login')">Kirish</a></p>
+          </div>
+          <div id="authLoginForm" style="display:none">
+            <h2>Xush kelibsiz!</h2>
+            <p class="auth-sub">Telefon raqam va parol bilan kiring</p>
+            <div class="fgroup"><label>Telefon raqam</label><input id="authLoginPhone" type="tel" placeholder="+998901234567" class="finput"/></div>
+            <div class="fgroup"><label>Parol</label><input id="authLoginPass" type="password" placeholder="Parolingiz" class="finput"/></div>
+            <div class="ferr" id="authLoginErr"></div>
+            <button class="fsubmit" onclick="doAuthLogin()">Kirish →</button>
+            <p class="auth-hint">Hisobingiz yo'qmi? <a onclick="switchAuthTab('reg')">Ro'yxatdan o'ting</a></p>
+          </div>
+          <div id="authOTPForm" style="display:none">
+            <h2>SMS tasdiqlash</h2>
+            <p class="auth-sub">Raqamingizga kod yuborildi: <strong id="authOTPPhone"></strong></p>
+            <div class="otp-row">
+              <input class="otp-inp auth-otp-inp" maxlength="1" oninput="authOtpNext(this,0)" id="authOtp0"/>
+              <input class="otp-inp auth-otp-inp" maxlength="1" oninput="authOtpNext(this,1)" id="authOtp1"/>
+              <input class="otp-inp auth-otp-inp" maxlength="1" oninput="authOtpNext(this,2)" id="authOtp2"/>
+              <input class="otp-inp auth-otp-inp" maxlength="1" oninput="authOtpNext(this,3)" id="authOtp3"/>
+              <input class="otp-inp auth-otp-inp" maxlength="1" oninput="authOtpNext(this,4)" id="authOtp4"/>
+              <input class="otp-inp auth-otp-inp" maxlength="1" oninput="authOtpNext(this,5)" id="authOtp5"/>
+            </div>
+            <p class="otp-hint">Demo uchun: <strong>123456</strong></p>
+            <div class="ferr" id="authOTPErr"></div>
+            <button class="fsubmit" onclick="doAuthVerifyOTP()">Tasdiqlash ✓</button>
+            <button class="resend-btn" onclick="authResendOTP()">Kodni qayta yuborish</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ===== LAWYERS PAGE ===== -->
-<div id="pg-lawyers" class="pg">
-  <div class="page-wrap">
-    <div class="page-head">
-      <button class="back-b" onclick="goPage('home')">← Orqaga</button>
-      <h1>Tasdiqlangan Advokatlar</h1>
-      <p>Litsenziyalangan huquqshunoslar bazasi</p>
-    </div>
-    <div class="filters">
-      <select id="fRegion" onchange="filterL()">
-        <option value="">Barcha hududlar</option>
-        <option value="toshkent">Toshkent</option>
-        <option value="samarqand">Samarqand</option>
-        <option value="buxoro">Buxoro</option>
-        <option value="namangan">Namangan</option>
-        <option value="andijon">Andijon</option>
-        <option value="fargona">Farg'ona</option>
-      </select>
-      <select id="fSpec" onchange="filterL()">
-        <option value="">Barcha sohalar</option>
-        <option value="mehnat">Mehnat huquqi</option>
-        <option value="oila">Oilaviy huquq</option>
-        <option value="jinoyat">Jinoiy huquq</option>
-        <option value="biznes">Biznes huquqi</option>
-        <option value="mulk">Mulk huquqi</option>
-      </select>
-      <input id="fSearch" type="text" placeholder="🔍 Qidirish..." oninput="filterL()"/>
-    </div>
-    <div class="lawyers-grid" id="lawyersGrid"></div>
-  </div>
-</div>
-
-<!-- ===== DASHBOARD (logged-in home) ===== -->
-<div id="pg-dashboard" class="pg">
-  <div class="page-wrap">
-    <div class="dash-head">
-      <h2>Salom, <span id="dashName">Foydalanuvchi</span> 👋</h2>
-      <p>Bugun qanday yordam kerak?</p>
-    </div>
-    <div class="dash-grid">
-      <div class="dash-card" onclick="goPage('chat')">
-        <div class="dc-ico">🤖</div>
-        <h3>AI Maslahat</h3>
-        <p>Huquqiy savolingizni bering</p>
-        <button>Boshlash →</button>
+  <!-- ===== CHAT PAGE ===== -->
+  <div id="pg-chat" class="pg">
+    <div class="chat-wrap">
+      <div class="chat-side" id="chatSide">
+        <div class="cs-logo" onclick="goPage('chat')">⚖️ <span>Adalat <b>AI</b></span></div>
+        <button class="new-btn" onclick="newChat()">+ Yangi savol</button>
+        <div class="cs-label">Huquq sohalari</div>
+        <div class="cs-topics">
+          <button onclick="topicAsk('mehnat')">💼 Mehnat huquqi</button>
+          <button onclick="topicAsk('oila')">👨‍👩‍👧 Oilaviy huquq</button>
+          <button onclick="topicAsk('mulk')">🏠 Mulk va uy-joy</button>
+          <button onclick="topicAsk('biznes')">📋 Biznes huquqi</button>
+          <button onclick="topicAsk('jinoyat')">⚖️ Jinoiy huquq</button>
+          <button onclick="topicAsk('isteMol')">🛒 Iste'molchi</button>
+          <button onclick="topicAsk('saylov')">🗳️ Saylov huquqi</button>
+          <button onclick="topicAsk('huquq')">📜 Asosiy huquqlar</button>
+        </div>
+        <div class="cs-label" style="margin-top:12px">Tez modda qidirish</div>
+        <div class="cs-quick">
+          <div onclick="sendQ('25-modda nima deydi?')">📌 25-modda — Erkinlik</div>
+          <div onclick="sendQ('26-modda nima deydi?')">📌 26-modda — Aybsizlik</div>
+          <div onclick="sendQ('36-modda nima deydi?')">📌 36-modda — Mehnat</div>
+          <div onclick="sendQ('54-modda nima deydi?')">📌 54-modda — Mulk</div>
+          <div onclick="sendQ('44-modda nima deydi?')">📌 44-modda — Sud himoya</div>
+        </div>
+        <div class="cs-footer">
+          <button onclick="goPage('docs')">📄 Hujjat yaratish</button>
+          <button onclick="goPage('lawyers')">⚖️ Advokatlar</button>
+          <button onclick="goPage('history')" class="hist-btn">📜 Savol tarixi</button>
+        </div>
       </div>
-      <div class="dash-card" onclick="goPage('lawyers')">
-        <div class="dc-ico">⚖️</div>
-        <h3>Advokat Topish</h3>
-        <p>340+ tasdiqlangan advokat</p>
-        <button>Ko'rish →</button>
+      <div class="chat-main">
+        <div class="chat-bar">
+          <button class="back-b" onclick="goPage('docs')">📄 Hujjatlar</button>
+          <div class="chat-status"><span class="dot"></span>AI Yordamchi faol · Konstitutsiya asosida</div>
+          <button class="lawyers-b" onclick="goPage('history')">📜 Tarix</button>
+        </div>
+        <div class="msgs" id="msgs"></div>
+        <div class="disc-bar">📖 Javoblar Konstitutsiya moddalariga asoslanadi &nbsp;|&nbsp; ⚠️ Aniq maslahat uchun advokatga murojaat qiling</div>
+        <div class="input-area">
+          <div class="input-box">
+            <button id="voiceBtn" class="voice-btn" onclick="toggleVoice()" title="Ovozli savol">🎤</button>
+            <textarea id="inp" placeholder="Huquqiy savolingizni yozing yoki gaplab bering... (masalan: 25-modda)" rows="1" onkeydown="handleKey(event)" oninput="autoH(this)"></textarea>
+            <button id="sendBtn" onclick="sendMsg()">➤</button>
+          </div>
+          <div class="input-hint" id="voiceHint">🎤 Ovoz — yuborish &nbsp;|&nbsp; Enter — yuborish &nbsp;|&nbsp; Shift+Enter — yangi qator</div>
+        </div>
       </div>
-      <div class="dash-card" onclick="openPremium()">
-        <div class="dc-ico">👑</div>
-        <h3>Premium</h3>
-        <p>Cheksiz imkoniyatlar</p>
-        <button>49,000 so'm/oy</button>
-      </div>
-    </div>
-    <div class="dash-history">
-      <h3>So'nggi savollarim</h3>
-      <div id="userHistory" class="history-list"></div>
     </div>
   </div>
-</div>
 
-<!-- ===== AUTH MODAL ===== -->
-<div class="overlay" id="authOverlay" onclick="closeOverlay(event,'authOverlay')">
-  <div class="modal" id="authModal">
-    <button class="modal-x" onclick="closeModal('authOverlay')">✕</button>
-    <div class="auth-tabs">
-      <button id="tabLogin" class="atab active" onclick="switchTab('login')">Kirish</button>
-      <button id="tabReg"   class="atab"        onclick="switchTab('reg')">Ro'yxat</button>
-    </div>
+  <!-- ===== HUJJAT GENERATORI ===== -->
+  <div id="pg-docs" class="pg">
+    <div class="page-wrap">
+      <div class="page-head">
+        <button class="back-b" onclick="goPage('chat')">← Orqaga</button>
+        <h1>📄 Hujjat Generatori</h1>
+        <p>AI yordamida rasmiy hujjatlarni yarating va PDF yuklab oling</p>
+      </div>
 
-    <!-- LOGIN -->
-    <div id="formLogin">
-      <h2>Xush kelibsiz!</h2>
-      <p class="auth-sub">Telefon raqam va parol bilan kiring</p>
-      <div class="fgroup">
-        <label>Telefon raqam</label>
-        <input id="loginPhone" type="tel" placeholder="+998901234567" class="finput"/>
+      <!-- Shablon tanlash -->
+      <div id="docStep1">
+        <div class="doc-cats">
+          <button class="doc-cat active" onclick="filterDocs('all',this)">Barchasi</button>
+          <button class="doc-cat" onclick="filterDocs('mehnat',this)">💼 Mehnat</button>
+          <button class="doc-cat" onclick="filterDocs('oila',this)">👨‍👩‍👧 Oila</button>
+          <button class="doc-cat" onclick="filterDocs('mulk',this)">🏠 Mulk</button>
+          <button class="doc-cat" onclick="filterDocs('sud',this)">⚖️ Sud</button>
+          <button class="doc-cat" onclick="filterDocs('umumiy',this)">📋 Umumiy</button>
+        </div>
+        <div class="doc-grid" id="docGrid"></div>
       </div>
-      <div class="fgroup">
-        <label>Parol</label>
-        <input id="loginPass" type="password" placeholder="Parolingiz" class="finput"/>
-      </div>
-      <div class="ferr" id="loginErr"></div>
-      <button class="fsubmit" onclick="doLogin()">Kirish</button>
-      <div class="for-sep">yoki</div>
-      <button class="tg-btn" onclick="telegramLogin()">📱 Telegram orqali kirish</button>
-      <p class="auth-hint">Hisobingiz yo'qmi? <a onclick="switchTab('reg')">Ro'yxatdan o'ting</a></p>
-    </div>
 
-    <!-- REGISTER -->
-    <div id="formReg" style="display:none">
-      <h2>Ro'yxatdan o'tish</h2>
-      <p class="auth-sub">Hisob yarating — bepul!</p>
-      <div class="fgroup">
-        <label>Ism va Familiya</label>
-        <input id="regName" type="text" placeholder="Ismingiz Familiyangiz" class="finput"/>
+      <!-- Forma to'ldirish -->
+      <div id="docStep2" style="display:none">
+        <div class="doc-form-header">
+          <button class="back-b" onclick="backToTemplates()">← Shablonlar</button>
+          <div>
+            <h2 id="docFormTitle"></h2>
+            <p id="docFormDesc" style="color:var(--text2);font-size:14px"></p>
+          </div>
+        </div>
+        <div class="doc-form-wrap">
+          <div id="docFormFields" class="doc-fields"></div>
+          <div class="doc-form-actions">
+            <button class="doc-ai-btn" onclick="autoFillWithAI()">🤖 AI bilan to'ldirish</button>
+            <button class="doc-preview-btn" onclick="previewDoc()">👁️ Ko'rish</button>
+          </div>
+        </div>
       </div>
-      <div class="fgroup">
-        <label>Telefon raqam</label>
-        <input id="regPhone" type="tel" placeholder="+998901234567" class="finput"/>
-      </div>
-      <div class="fgroup">
-        <label>Parol</label>
-        <input id="regPass" type="password" placeholder="Kamida 6 ta belgi" class="finput"/>
-      </div>
-      <div class="fgroup">
-        <label>Parolni tasdiqlang</label>
-        <input id="regPass2" type="password" placeholder="Parolni qaytaring" class="finput"/>
-      </div>
-      <div class="ferr" id="regErr"></div>
-      <button class="fsubmit" onclick="doRegister()">Ro'yxatdan o'tish</button>
-      <p class="auth-hint">Hisobingiz bormi? <a onclick="switchTab('login')">Kiring</a></p>
-    </div>
 
-    <!-- OTP STEP -->
-    <div id="formOTP" style="display:none">
-      <h2>SMS tasdiqlash</h2>
-      <p class="auth-sub">Raqamingizga kod yuborildi: <strong id="otpPhone"></strong></p>
-      <div class="otp-row">
-        <input class="otp-inp" maxlength="1" oninput="otpNext(this,0)" id="otp0"/>
-        <input class="otp-inp" maxlength="1" oninput="otpNext(this,1)" id="otp1"/>
-        <input class="otp-inp" maxlength="1" oninput="otpNext(this,2)" id="otp2"/>
-        <input class="otp-inp" maxlength="1" oninput="otpNext(this,3)" id="otp3"/>
-        <input class="otp-inp" maxlength="1" oninput="otpNext(this,4)" id="otp4"/>
-        <input class="otp-inp" maxlength="1" oninput="otpNext(this,5)" id="otp5"/>
+      <!-- Ko'rish va yuklab olish -->
+      <div id="docStep3" style="display:none">
+        <div class="doc-preview-header">
+          <button class="back-b" onclick="backToForm()">← Tahrirlash</button>
+          <h2>Hujjat tayyor ✓</h2>
+          <div class="doc-dl-btns">
+            <button class="doc-print-btn" onclick="printDoc()">🖨️ Chop etish</button>
+            <button class="doc-pdf-btn" onclick="downloadPDF()">⬇️ PDF Yuklab olish</button>
+          </div>
+        </div>
+        <div class="doc-preview-box" id="docPreviewBox"></div>
       </div>
-      <p class="otp-hint">Demo uchun: <strong>123456</strong></p>
-      <div class="ferr" id="otpErr"></div>
-      <button class="fsubmit" onclick="verifyOTP()">Tasdiqlash</button>
-      <button class="resend-btn" id="resendBtn" onclick="resendOTP()">Kodni qayta yuborish</button>
     </div>
   </div>
-</div>
 
-<!-- ===== LAWYER MODAL ===== -->
-<div class="overlay" id="lawyerOverlay" onclick="closeOverlay(event,'lawyerOverlay')">
-  <div class="modal lawyer-modal">
-    <button class="modal-x" onclick="closeModal('lawyerOverlay')">✕</button>
-    <div id="lawyerDetail"></div>
-  </div>
-</div>
-
-<!-- ===== PREMIUM MODAL ===== -->
-<div class="overlay" id="premOverlay" onclick="closeOverlay(event,'premOverlay')">
-  <div class="modal prem-modal">
-    <button class="modal-x" onclick="closeModal('premOverlay')">✕</button>
-    <div class="prem-content">
-      <div class="prem-crown">👑</div>
-      <h2>Premium ga o'ting</h2>
-      <p>Cheksiz huquqiy yordam</p>
-      <ul class="prem-list">
-        <li>✓ Cheksiz AI savol</li>
-        <li>✓ Advokat bilan to'g'ridan-to'g'ri chat</li>
-        <li>✓ 30 daqiqada javob kafolati</li>
-        <li>✓ Hujjatlar tahlili</li>
-        <li>✓ Qadam-baqadam yo'riqnoma</li>
-      </ul>
-      <div class="prem-price">49,000 so'm <span>/oy</span></div>
-      <button class="prem-cta" onclick="buyPremium()">Hozir Olish</button>
-      <p class="prem-note">Istalgan vaqt bekor qilish mumkin</p>
+  <!-- ===== LAWYERS PAGE ===== -->
+  <div id="pg-lawyers" class="pg">
+    <div class="page-wrap">
+      <div class="page-head">
+        <button class="back-b" onclick="goPage('chat')">← Orqaga</button>
+        <h1>Tasdiqlangan Advokatlar</h1>
+        <p>Litsenziyalangan huquqshunoslar bazasi</p>
+      </div>
+      <div class="filters">
+        <select id="fRegion" onchange="filterL()">
+          <option value="">Barcha hududlar</option>
+          <option value="toshkent">Toshkent</option>
+          <option value="samarqand">Samarqand</option>
+          <option value="buxoro">Buxoro</option>
+          <option value="namangan">Namangan</option>
+          <option value="andijon">Andijon</option>
+          <option value="fargona">Farg'ona</option>
+        </select>
+        <select id="fSpec" onchange="filterL()">
+          <option value="">Barcha sohalar</option>
+          <option value="mehnat">Mehnat huquqi</option>
+          <option value="oila">Oilaviy huquq</option>
+          <option value="jinoyat">Jinoiy huquq</option>
+          <option value="biznes">Biznes huquqi</option>
+          <option value="mulk">Mulk huquqi</option>
+        </select>
+        <input id="fSearch" type="text" placeholder="🔍 Qidirish..." oninput="filterL()"/>
+      </div>
+      <div class="lawyers-grid" id="lawyersGrid"></div>
     </div>
   </div>
-</div>
 
-<!-- ===== TOAST ===== -->
-<div id="toast" class="toast"></div>
+  <!-- ===== TARIX ===== -->
+  <div id="pg-history" class="pg">
+    <div class="page-wrap">
+      <div class="page-head hist-page-head">
+        <button class="back-b" onclick="goPage('chat')">← Orqaga</button>
+        <div class="hist-head-info"><h1>📜 Savol Tarixi</h1><p>Barcha so'ralgan savollar va javoblar</p></div>
+        <button class="clear-hist-btn" onclick="clearHistory()">🗑️ Tozalash</button>
+      </div>
+      <div id="historyList" class="history-full-list"></div>
+    </div>
+  </div>
 
-<script src="app.js"></script>
+  <!-- ===== PREMIUM SAHIFA ===== -->
+  <div id="pg-premium" class="pg">
+    <div class="page-wrap">
+      <div class="page-head">
+        <button class="back-b" onclick="goPage('chat')">← Orqaga</button>
+        <h1>👑 Premium Rejalar</h1>
+        <p>Cheksiz imkoniyatlar bilan ishlang</p>
+      </div>
+      <div class="prem-plans">
+        <!-- BEPUL -->
+        <div class="prem-plan">
+          <div class="prem-plan-ico">🆓</div>
+          <div class="prem-plan-name">Bepul</div>
+          <div class="prem-plan-price">0 <span>so'm/oy</span></div>
+          <ul class="prem-feat-list">
+            <li class="y">✓ Kuniga 10 ta AI savol</li>
+            <li class="y">✓ Konstitutsiya qidirish</li>
+            <li class="y">✓ Oyiga 2 ta hujjat</li>
+            <li class="y">✓ Advokatlar ro'yxati</li>
+            <li class="n">✗ Tezkor javob (GPT-4o)</li>
+            <li class="n">✗ Advokat bilan chat</li>
+            <li class="n">✗ Cheksiz hujjat</li>
+          </ul>
+          <button class="prem-plan-btn" onclick="goPage('chat')">Hozir ishlating</button>
+        </div>
+        <!-- PREMIUM -->
+        <div class="prem-plan prem-plan-best">
+          <div class="prem-plan-badge">Eng mashhur</div>
+          <div class="prem-plan-ico">👑</div>
+          <div class="prem-plan-name">Premium</div>
+          <div class="prem-plan-price">49,900 <span>so'm/oy</span></div>
+          <ul class="prem-feat-list">
+            <li class="y">✓ Cheksiz AI savol</li>
+            <li class="y">✓ GPT-4o (eng tez, aniq)</li>
+            <li class="y">✓ Cheksiz hujjat + PDF</li>
+            <li class="y">✓ Advokat bilan bevosita chat</li>
+            <li class="y">✓ Ovozli yordamchi</li>
+            <li class="y">✓ Prioritet javob</li>
+            <li class="y">✓ Tarix cheksiz</li>
+          </ul>
+          <button class="prem-plan-btn prem-cta" onclick="buyPremium('payme')">💳 Payme orqali olish</button>
+          <button class="prem-plan-btn-alt" onclick="buyPremium('click')">Click orqali</button>
+        </div>
+        <!-- KORPORATIV -->
+        <div class="prem-plan">
+          <div class="prem-plan-ico">🏢</div>
+          <div class="prem-plan-name">Korporativ</div>
+          <div class="prem-plan-price">249,000 <span>so'm/oy</span></div>
+          <ul class="prem-feat-list">
+            <li class="y">✓ 10 ta foydalanuvchi</li>
+            <li class="y">✓ Maxsus advokat biriktiriladi</li>
+            <li class="y">✓ Shartnomalar tahlili</li>
+            <li class="y">✓ API kirish huquqi</li>
+            <li class="y">✓ Korporativ hisobotlar</li>
+            <li class="y">✓ 24/7 support</li>
+          </ul>
+          <button class="prem-plan-btn" onclick="contactCorp()">📞 Bog'lanish</button>
+        </div>
+      </div>
+      <!-- To'lov xavfsizligi -->
+      <div class="prem-security">
+        <div>🔒 SSL himoyasi</div>
+        <div>🔄 Istalgan vaqt bekor qilish</div>
+        <div>✅ Payme & Click rasmiy</div>
+        <div>💯 3 kunlik qaytarish kafolati</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODALS ===== -->
+  <!-- Lawyer modal -->
+  <div class="overlay" id="lawyerOverlay" onclick="closeOverlay(event,'lawyerOverlay')">
+    <div class="modal lawyer-modal">
+      <button class="modal-x" onclick="closeModal('lawyerOverlay')">✕</button>
+      <div id="lawyerDetail"></div>
+    </div>
+  </div>
+
+  <!-- API key modal -->
+  <div class="overlay" id="apiOverlay" onclick="closeOverlay(event,'apiOverlay')">
+    <div class="modal" style="max-width:460px">
+      <button class="modal-x" onclick="closeModal('apiOverlay')">✕</button>
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:48px;margin-bottom:8px">🤖</div>
+        <h2 style="font-size:20px;font-weight:800">GPT-4o-mini ulash</h2>
+        <p style="font-size:13px;color:var(--text2);margin-top:6px">OpenAI API kalitingizni kiriting — savollarga kengroq va aniqroq javob beradi</p>
+      </div>
+      <div class="fgroup">
+        <label>OpenAI API Kalit</label>
+        <input id="apiKeyInput" type="password" placeholder="sk-proj-..." class="finput"/>
+      </div>
+      <div class="ferr" id="apiKeyErr"></div>
+      <div style="background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--text2)">
+        📖 <strong>Qanday olish?</strong><br>
+        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue)">platform.openai.com/api-keys</a> → <em>Create new secret key</em>
+      </div>
+      <button class="fsubmit" onclick="saveApiKey()">💾 Saqlash</button>
+      <button class="resend-btn" onclick="GPT.clear();updateNav();closeModal('apiOverlay');toast('API kalit o\'chirildi')">🗑️ Kalitni o'chirish</button>
+    </div>
+  </div>
+
+  <!-- AI to'ldirish modal -->
+  <div class="overlay" id="aiModalOverlay" onclick="closeOverlay(event,'aiModalOverlay')">
+    <div class="modal" style="max-width:480px">
+      <button class="modal-x" onclick="closeModal('aiModalOverlay')">✕</button>
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:40px;margin-bottom:8px">🤖</div>
+        <h2 style="font-size:18px;font-weight:800">AI bilan hujjat to'ldirish</h2>
+        <p style="font-size:13px;color:var(--text2)">Vaziyatingizni oddiy tilda tushuntiring — AI hujjatni avtomatik to'ldiradi</p>
+      </div>
+      <div class="fgroup">
+        <label>Vaziyatingizni tasvirlab bering</label>
+        <textarea id="aiSituationText" class="finput" rows="4" placeholder="Masalan: Men Toshkent shahrida ishlagandim, 2024-yil 15-martda boshligim meni ogohlantirishsiz ishdan bo'shatdi. Ish haqi ham to'liq to'lanmadi..."></textarea>
+      </div>
+      <button class="fsubmit" onclick="processAISituation()">🚀 AI to'ldirsin</button>
+    </div>
+  </div>
+
+  <!-- PDF print container (ko'rinmaydi, faqat print uchun) -->
+  <div id="printContainer" style="display:none"></div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
 </body>
 </html>

@@ -1,35 +1,108 @@
 // ============================================================
-//  ADALAT AI — app.js  (to'liq ishlaydigan versiya)
+//  ADALAT AI — app.js  (Konstitutsiya + GPT + Tarix)
 // ============================================================
 
+// ===== GPT API =====
+const GPT = {
+  get key() { return localStorage.getItem('adalat_gpt_key') || ''; },
+  save(k)   { localStorage.setItem('adalat_gpt_key', k.trim()); },
+  clear()   { localStorage.removeItem('adalat_gpt_key'); }
+};
+
+// O'zbekiston Konstitutsiyasi — GPT uchun system prompt
+const SYSTEM_PROMPT = `Siz "Adalat AI" — O'zbekiston Respublikasining huquqiy yordamchisiz.
+Foydalanuvchi savolini O'zbekiston Respublikasi Konstitutsiyasi va qonunlari asosida tahlil qiling.
+
+Qoidalar:
+1. Har doim O'ZBEK tilida javob bering
+2. Javobda ANIQ modda raqamlarini ko'rsating (masalan: "25-modda bo'yicha...")
+3. Javobni quyidagi format bilan yozing:
+   - Avval asosiy tushuntirish (2-3 jumla)
+   - Keyin "📌 Tegishli moddalar" bo'limi
+   - So'ngra "📋 Nima qilish kerak?" - 3-5 qadam
+4. Murakkab masalalarda advokatga murojaat qilishni tavsiya eting
+5. Javob oxirida: "📖 Manba: O'zbekiston Respublikasi Konstitutsiyasi"
+
+O'zbekiston Konstitutsiyasi asosiy moddalar:
+- 7-modda: Xalq — davlat hokimiyatining birdan-bir manbai
+- 13-modda: Demokratiya umumbashariy tamoyillarga asoslanadi
+- 16-modda: Konstitutsiya oliy yuridik kuchga ega
+- 19-modda: Davlat fuqarolar huquqlarini ta'minlash majburiyatini oladi
+- 20-modda: Huquqlar faqat qonun bilan cheklanishi mumkin
+- 25-modda: Erkinlik va shaxsiy daxlsizlik — hech kim qonunsiz hibsga olinmaydi
+- 26-modda: Aybsizlik prezumpsiyasi — isbotlanmagan aybdor hisoblanmaydi
+- 27-modda: Qiynoq va zo'ravonlik ta'qiqlanadi; o'ziga qarshi guvohlik bermaslik huquqi
+- 28-modda: Erkin harakat qilish va yashash joyini tanlash huquqi
+- 29-modda: So'z, fikr, axborot erkinligi
+- 30-modda: Davlat organlari hujjatlar bilan tanishish imkoniyatini ta'minlaydi
+- 31-modda: Vijdon erkinligi — xohlagan dinga e'tiqod qilish huquqi
+- 32-modda: Davlat boshqaruvida ishtirok etish huquqi
+- 33-modda: Miting va namoyishlar o'tkazish huquqi
+- 36-modda: Mehnat qilish, erkin kasb tanlash; majburiy mehnat ta'qiqlanadi
+- 37-modda: Dam olish huquqi; iş vaqti, haftalik ta'til, yillik to'lov ta'tili
+- 38-modda: Keksayish, mehnat layoqatini yo'qotishda ijtimoiy ta'minot
+- 39-modda: Tibbiy yordam huquqi; davlat muassasalarida bepul tibbiy yordam
+- 40-modda: Bilim olish huquqi; maktabgacha, umumiy o'rta, o'rta maxsus ta'lim bepul
+- 41-modda: Birlashish, kasaba uyushmalari va jamoat tuzish huquqi
+- 44-modda: Sud orqali huquqlarini himoya qilish kafolatlanadi
+- 45-modda: Yuridik yordam olish huquqi; ba'zi hollarda davlat hisobiga bepul
+- 46-modda: Ne bis in idem — ikki marta jinoiy javobgarlikka tortib bo'lmaydi
+- 53-modda: Bozor munosabatlari iqtisodiy rivojlanish asosi
+- 54-modda: Barcha mulk shakllari teng himoyalanadi; xususiy mulk daxlsiz
+- 55-modda: Yer, suv, tabiiy resurslar milliy boylikdir
+- 63-modda: Oila — jamiyatning asosiy bo'g'ini; nikoh ixtiyoriy
+- 64-modda: Ota-onalar farzandlarini voyaga yetguncha boqishi shart
+- 65-modda: Mehnat layoqatini yo'qotgan ota-onalarni boqish farzandlar burchi
+- 76-modda: Oliy Majlis — ikki palatali (Qonunchilik palatasi + Senat)
+- 90-modda: Prezident — davlat boshlig'i va ijroiya hokimiyat rahbari
+- 91-modda: Prezidentlikka: fuqaro, 35 yosh, 10 yil Uzbekistonda, davlat tilini bilish
+- 94-modda: Prezident 7 yillik muddatga saylanadi, 3 muddatdan ko'p bo'lmaydi
+- 117-modda: 18 yoshdan saylov huquqi
+- 118-modda: Saylovlar umumiy, teng, to'g'ridan-to'g'ri, yashirin ovoz bilan
+
+Mehnat Kodeksi asosiy qoidalar:
+- 52-modda: Ishdan bo'shatish faqat asosli sabablar bilan, 2 hafta oldindan ogohlantirish
+- Ish haqi oyda kamida 1 marta to'lanadi
+- Yillik ta'til 15 ish kunidan kam bo'lmaydi
+
+Oila Kodeksi:
+- Ajralishda mulk 50/50 taqsimlanadi (umumiy qoida)
+- Aliment: 1 bola 25%, 2 bola 33%, 3+ bola 50% daromaddan
+
+Ma'muriy javobgarlik:
+- 138-modda: Svetofor talablarini buzish — BHM dan 1 qismi jarima
+
+Foydalanuvchi savolini KENG va ANIQ tahlil qiling, hatto savol noaniq bo'lsa ham kontekstdan kelib chiqib eng ehtimoliy huquqiy masalani tushuntiring.`;
+
 // ===== AUTH STATE =====
-// Foydalanuvchi ma'lumotlari localStorage da saqlanadi
 const AUTH = {
   get user() { try { return JSON.parse(localStorage.getItem('adalat_user')) || null; } catch { return null; } },
   save(u)    { localStorage.setItem('adalat_user', JSON.stringify(u)); },
   logout()   { localStorage.removeItem('adalat_user'); },
   get history() { try { return JSON.parse(localStorage.getItem('adalat_history')) || []; } catch { return []; } },
-  addHistory(q, topic) {
+  addHistory(q, a, topic) {
     const h = this.history;
-    h.unshift({ q, topic, date: new Date().toLocaleDateString('uz-UZ'), id: Date.now() });
-    if (h.length > 10) h.pop();
+    h.unshift({ q, a, topic, date: new Date().toLocaleString('uz-UZ'), id: Date.now() });
+    if (h.length > 50) h.pop();
     localStorage.setItem('adalat_history', JSON.stringify(h));
-  }
+  },
+  clearHistory() { localStorage.removeItem('adalat_history'); }
 };
 
-// ===== REGISTERED USERS (localStorage) =====
+// ===== REGISTERED USERS =====
 function getUsers() { try { return JSON.parse(localStorage.getItem('adalat_users')) || []; } catch { return []; } }
 function saveUsers(arr) { localStorage.setItem('adalat_users', JSON.stringify(arr)); }
 
 // ===== PAGE NAVIGATION =====
-let _pendingQ = ''; // hero qidiruv so'rovi
+let _pendingQ = '';
 
 function goPage(name) {
   document.querySelectorAll('.pg').forEach(p => p.classList.remove('active'));
   const el = document.getElementById('pg-' + name);
   if (el) el.classList.add('active');
   if (name === 'lawyers') renderLawyers(LAWYERS);
-  if (name === 'dashboard') renderDashboard();
+  if (name === 'history') renderHistory();
+  if (name === 'docs') renderDocGrid();
   if (name === 'chat' && _pendingQ) {
     setTimeout(() => { sendQ(_pendingQ); _pendingQ = ''; }, 300);
   }
@@ -45,21 +118,43 @@ function toggleNav() {
 function updateNav() {
   const nr = document.getElementById('navRight');
   if (AUTH.user) {
+    const apiStatus = GPT.key ? '🟢' : '🔑';
+    const isPrem = AUTH.user.plan === 'premium';
+    const premBtn = isPrem
+      ? '<span class="nav-prem-badge">👑 Premium</span>'
+      : '<button class="nav-prem-btn" onclick="goPage(\'premium\')">👑 Premium</button>';
     nr.innerHTML = `
-      <button class="nav-user-btn" onclick="goPage('dashboard')">👤 ${AUTH.user.name.split(' ')[0]}</button>
+      <button class="nav-api-btn" onclick="openApiSettings()">${apiStatus} API</button>
+      <button class="nav-user-btn" onclick="goPage('history')">👤 ${AUTH.user.name.split(' ')[0]}</button>
+      ${premBtn}
       <button class="nav-btn-login" onclick="doLogout()">Chiqish</button>`;
   } else {
-    nr.innerHTML = `
-      <button class="nav-btn-prem" onclick="openPremium()">👑 Premium</button>
-      <button class="nav-btn-login" onclick="openAuth()">Kirish</button>`;
+    nr.innerHTML = `<button class="nav-btn-login" onclick="showRegPage()">Ro'yxatdan o'tish</button>`;
   }
 }
 
 function doLogout() {
   AUTH.logout();
   updateNav();
-  goPage('home');
+  showRegPage();
   toast('Tizimdan chiqdingiz');
+}
+
+// ===== SHOW REG PAGE (kirish sahifasi) =====
+function showRegPage() {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg-auth').classList.add('active');
+  switchAuthTab('reg');
+  window.scrollTo(0, 0);
+  updateNav();
+}
+
+function showLoginPage() {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg-auth').classList.add('active');
+  switchAuthTab('login');
+  window.scrollTo(0, 0);
+  updateNav();
 }
 
 // ===== HERO SEARCH =====
@@ -175,199 +270,262 @@ function chatL(id) {
   }, 300);
 }
 
-// ===== DASHBOARD =====
-function renderDashboard() {
-  const u = AUTH.user;
-  if (!u) { goPage('home'); return; }
-  document.getElementById('dashName').textContent = u.name;
+// ===== TARIX BO'LIMI =====
+function renderHistory() {
   const hist = AUTH.history;
-  const hl = document.getElementById('userHistory');
+  const container = document.getElementById('historyList');
+  if (!container) return;
   if (!hist.length) {
-    hl.innerHTML = `<div class="no-hist">Hali savol yo'q. AI bilan gaplashing!</div>`;
-  } else {
-    hl.innerHTML = hist.map(h => `
-      <div class="hist-item" onclick="sendQ('${h.q.replace(/'/g,"\\'")}');goPage('chat')">
-        <div class="hist-ico">💬</div>
-        <div class="hist-info"><strong>${h.q.length>60?h.q.slice(0,60)+'...':h.q}</strong><span>${h.date}</span></div>
-        <div class="hist-arr">›</div>
-      </div>`).join('');
+    container.innerHTML = `<div class="no-hist-big">
+      <div style="font-size:64px;margin-bottom:16px">📜</div>
+      <h3>Tarix bo'sh</h3>
+      <p>Siz hali hech qanday savol bermadingiz. AI bilan gaplashing!</p>
+      <button class="hist-chat-btn" onclick="goPage('chat')">🤖 AI Maslahat →</button>
+    </div>`;
+    return;
   }
+  container.innerHTML = hist.map(h => `
+    <div class="hist-card">
+      <div class="hist-card-top">
+        <div class="hist-q-icon">❓</div>
+        <div class="hist-q-text">${h.q}</div>
+        <div class="hist-date">${h.date}</div>
+      </div>
+      <div class="hist-answer">${fmt(h.a)}</div>
+      <button class="hist-repeat-btn" onclick="sendQ('${h.q.replace(/'/g,"\\'")}');goPage('chat')">🔄 Qayta so'rash</button>
+    </div>`).join('');
 }
 
-// ===== AUTH MODAL =====
-let _regData = {}; // ro'yxat jarayonidagi vaqtincha ma'lumot
-
-function openAuth()  { openModal('authOverlay'); switchTab('login'); }
-function openPremium() { openModal('premOverlay'); }
-
-function switchTab(tab) {
-  ['formLogin','formReg','formOTP'].forEach(f => document.getElementById(f).style.display = 'none');
-  document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('formReg').style.display   = tab === 'reg'   ? 'block' : 'none';
-  document.querySelectorAll('.atab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='reg')));
-  ['loginErr','regErr','otpErr'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=''; });
+function clearHistory() {
+  if (!confirm('Barcha tarixni o\'chirmoqchimisiz?')) return;
+  AUTH.clearHistory();
+  renderHistory();
+  toast('Tarix tozalandi');
 }
 
-// --- LOGIN ---
-function doLogin() {
-  const phone = document.getElementById('loginPhone').value.trim();
-  const pass  = document.getElementById('loginPass').value;
-  const err   = document.getElementById('loginErr');
+// ===== AUTH INLINE PAGE =====
+let _regData = {};
+
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('authLoginForm');
+  const regForm   = document.getElementById('authRegForm');
+  const otpForm   = document.getElementById('authOTPForm');
+  const tabL = document.getElementById('authTabLogin');
+  const tabR = document.getElementById('authTabReg');
+  if (loginForm) loginForm.style.display = tab === 'login' ? 'block' : 'none';
+  if (regForm)   regForm.style.display   = tab === 'reg'   ? 'block' : 'none';
+  if (otpForm)   otpForm.style.display   = 'none';
+  if (tabL) tabL.classList.toggle('active', tab === 'login');
+  if (tabR) tabR.classList.toggle('active', tab === 'reg');
+  ['authLoginErr','authRegErr','authOTPErr'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=''; });
+}
+
+function doAuthLogin() {
+  const phone = document.getElementById('authLoginPhone').value.trim();
+  const pass  = document.getElementById('authLoginPass').value;
+  const err   = document.getElementById('authLoginErr');
   err.textContent = '';
-
   if (!phone) { err.textContent = 'Telefon raqam kiriting'; return; }
   if (!pass)  { err.textContent = 'Parol kiriting'; return; }
-
   const users = getUsers();
-  const u = users.find(x => x.phone === phone);
-  if (!u)          { err.textContent = '❌ Bu raqam ro\'yxatdan o\'tmagan'; return; }
+  const u = users.find(x => x.phone === phone.replace(/\s/g,''));
+  if (!u)           { err.textContent = '❌ Bu raqam ro\'yxatdan o\'tmagan'; return; }
   if (u.pass !== pass) { err.textContent = '❌ Parol noto\'g\'ri'; return; }
-
   AUTH.save(u);
-  closeModal('authOverlay');
   updateNav();
   toast(`✅ Xush kelibsiz, ${u.name}!`);
-  goPage('dashboard');
+  goPage('chat');
 }
 
-// --- REGISTER ---
-function doRegister() {
-  const name  = document.getElementById('regName').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  const pass  = document.getElementById('regPass').value;
-  const pass2 = document.getElementById('regPass2').value;
-  const err   = document.getElementById('regErr');
+function doAuthRegister() {
+  const name  = document.getElementById('authRegName').value.trim();
+  const phone = document.getElementById('authRegPhone').value.trim();
+  const pass  = document.getElementById('authRegPass').value;
+  const pass2 = document.getElementById('authRegPass2').value;
+  const err   = document.getElementById('authRegErr');
   err.textContent = '';
-
   if (!name)           { err.textContent = 'Ismingizni kiriting'; return; }
   if (name.length < 2) { err.textContent = 'Ism kamida 2 ta harf bo\'lsin'; return; }
   if (!phone)          { err.textContent = 'Telefon raqam kiriting'; return; }
-  // Telefon: +998 bilan boshlanishi va kamida 9 raqam bo'lishi kerak
   const digits = phone.replace(/\D/g, '');
   if (digits.length < 9) { err.textContent = 'To\'g\'ri telefon raqam kiriting'; return; }
   if (pass.length < 6)   { err.textContent = 'Parol kamida 6 ta belgi bo\'lsin'; return; }
   if (pass2 && pass !== pass2) { err.textContent = 'Parollar mos kelmadi'; return; }
-
   const users = getUsers();
-  const normalizedPhone = phone.replace(/\s/g, ''); // probellarsiz saqlash
+  const normalizedPhone = phone.replace(/\s/g, '');
   if (users.find(x => x.phone.replace(/\s/g,'') === normalizedPhone)) {
     err.textContent = '❌ Bu raqam allaqachon ro\'yxatdan o\'tgan'; return;
   }
-
   _regData = { name, phone: normalizedPhone, pass };
-  // OTP bosqichiga o'tish
-  document.getElementById('formReg').style.display = 'none';
-  document.getElementById('formOTP').style.display = 'block';
-  document.getElementById('otpPhone').textContent   = normalizedPhone;
-  document.querySelectorAll('.otp-inp').forEach(i => i.value = '');
-  setTimeout(() => document.getElementById('otp0').focus(), 100);
+  document.getElementById('authRegForm').style.display = 'none';
+  document.getElementById('authOTPForm').style.display = 'block';
+  document.getElementById('authOTPPhone').textContent = normalizedPhone;
+  document.querySelectorAll('.auth-otp-inp').forEach(i => i.value = '');
+  setTimeout(() => document.getElementById('authOtp0').focus(), 100);
 }
 
-// --- OTP ---
-function otpNext(el, idx) {
+function authOtpNext(el, idx) {
   el.value = el.value.replace(/\D/g, '');
-  if (el.value && idx < 5) {
-    document.getElementById('otp' + (idx + 1)).focus();
-  }
-  // Agar hammasi to'ldirilsa avtomatik tekshirish
-  const all = Array.from({length:6}, (_,i) => document.getElementById('otp'+i).value);
-  if (all.every(v => v)) verifyOTP();
+  if (el.value && idx < 5) document.getElementById('authOtp' + (idx + 1)).focus();
+  const all = Array.from({length:6}, (_,i) => document.getElementById('authOtp'+i).value);
+  if (all.every(v => v)) doAuthVerifyOTP();
 }
 
-function verifyOTP() {
-  const code = Array.from({length:6}, (_,i) => document.getElementById('otp'+i).value).join('');
-  const err  = document.getElementById('otpErr');
+function doAuthVerifyOTP() {
+  const code = Array.from({length:6}, (_,i) => document.getElementById('authOtp'+i).value).join('');
+  const err = document.getElementById('authOTPErr');
   err.textContent = '';
-
   if (code.length < 6) { err.textContent = 'Barcha 6 ta raqamni kiriting'; return; }
   if (code !== '123456') {
     err.textContent = '❌ Noto\'g\'ri kod. Demo uchun: 123456';
-    document.querySelectorAll('.otp-inp').forEach(i => i.value = '');
-    document.getElementById('otp0').focus();
+    document.querySelectorAll('.auth-otp-inp').forEach(i => i.value = '');
+    document.getElementById('authOtp0').focus();
     return;
   }
-
-  // Foydalanuvchini saqlash
   const newUser = { name: _regData.name, phone: _regData.phone, pass: _regData.pass, plan: 'free', createdAt: Date.now() };
   const users = getUsers();
   users.push(newUser);
   saveUsers(users);
   AUTH.save(newUser);
-
-  closeModal('authOverlay');
   updateNav();
   toast(`🎉 Ro'yxatdan o'tdingiz! Xush kelibsiz, ${newUser.name}!`);
-  goPage('dashboard');
+  goPage('chat');
 }
 
-function resendOTP() {
-  document.querySelectorAll('.otp-inp').forEach(i => i.value = '');
-  document.getElementById('otp0').focus();
-  document.getElementById('otpErr').textContent = '';
+function authResendOTP() {
+  document.querySelectorAll('.auth-otp-inp').forEach(i => i.value = '');
+  document.getElementById('authOtp0').focus();
+  document.getElementById('authOTPErr').textContent = '';
   toast('📱 Kod qayta yuborildi (demo: 123456)');
 }
 
-function telegramLogin() {
-  toast('📱 Telegram bot orqali kirish tez orada ishga tushadi!');
-}
+// ===== O'ZBEKISTON KONSTITUTSIYASI MODDALAR BAZASI =====
+const KONSTITUTSIYA = [
+  // I BOB — ASOSIY QOIDALAR
+  { mod: 1,  bob: "I bob. Davlat suvereniteti", text: "O'zbekiston Respublikasi — suveren demokratik respublika. O'zbekiston Respublikasining nomi O'zbekiston deb ham yuritiladi." },
+  { mod: 2,  bob: "I bob. Davlat suvereniteti", text: "Davlat xalq manfaatlarini ko'zlab ish tutadi va uning faoliyati odamlar hayotini, huquqlari, erkinliklari va qonuniy manfaatlarini ta'minlashga yo'naltirilgan bo'ladi." },
+  { mod: 7,  bob: "I bob. Davlat suvereniteti", text: "Xalq davlat hokimiyatining birdan-bir manbayidir. Davlat hokimiyati xalq manfaatlari yo'lida va xalq tomonidan amalga oshiriladi." },
+  // II BOB — FUQAROLIK
+  { mod: 17, bob: "II bob. Fuqarolik", text: "O'zbekiston Respublikasining fuqaroligi yagona va teng. O'zbekiston fuqarosi bo'la turib, boshqa davlatning fuqarosi bo'lish mumkin emas." },
+  // III BOB — IQTISODIY ASOSLAR
+  { mod: 53, bob: "III bob. Iqtisodiy asoslar", text: "Bozor муносабатларini rivojlantirish O'zbekiston iqtisodiy rivojlanishining asosi hisoblanadi." },
+  { mod: 54, bob: "III bob. Iqtisodiy asoslar", text: "Barcha mulk shakllari teng huquqli bo'lib, qonun bilan bir xil himoya qilinadi. Xususiy mulk daxlsizdir. Mulk egasi o'z mulkidan o'zboshimchalik bilan mahrum etilishi mumkin emas." },
+  // II QISM — ASOSIY HUQUQ VA ERKINLIKLAR
+  // IV BOB — SHAXSIY HUQUQLAR
+  { mod: 25, bob: "IV bob. Shaxsiy huquqlar", text: "Har bir kishi erkinlik va shaxsiy daxlsizlik huquqiga ega. Hech kim qonunda belgilangan tartibdan boshqacha usulda hibsga olinishi yoki qamoqqa olinishi mumkin emas." },
+  { mod: 26, bob: "IV bob. Shaxsiy huquqlar", text: "Hech kim biror jinoyat sodir etganlik uchun qonunda ko'rsatilgan tartibda, sudning qonuniy kuchga kirgan hukmi bo'lmasa, aybdor deb topilishi va jinoiy jazoga tortilishi mumkin emas. Aybsizlik prezumpsiyasi: shaxs aybdorligi isbotlanmagan ekan, u aybsiz deb hisoblanadi." },
+  { mod: 27, bob: "IV bob. Shaxsiy huquqlar", text: "Hech kim qiynoqqa, zo'ravonlikka, boshqa shafqatsiz, insoniy qadr-qimmatni kamsituvchi muomalaga javob berishga majbur etilishi mumkin emas. Hech kim o'ziga qarshi guvohlik berishga majbur etilishi mumkin emas." },
+  { mod: 28, bob: "IV bob. Shaxsiy huquqlar", text: "O'zbekiston Respublikasining har bir fuqarosi O'zbekiston hududida erkin harakat qilish, yashash joyini tanlash, respublikadan tashqariga chiqib ketish huquqiga ega." },
+  { mod: 29, bob: "IV bob. Shaxsiy huquqlar", text: "Har kimning so'z va fikr erkinligi huquqi kafolatlanadi. Har kim o'zi istagan axborotni izlash, olish va tarqatish huquqiga ega. Axborot erkinligini cheklashga faqat qonunda belgilangan hollarda yo'l qo'yiladi." },
+  { mod: 30, bob: "IV bob. Shaxsiy huquqlar", text: "Davlat organlari, jamoat birlashmalari va mansabdor shaxslar fuqarolarga ularning huquqlari va manfaatlariga daxldor bo'lgan hujjatlar bilan tanishib chiqish imkoniyatini ta'minlaydi." },
+  { mod: 31, bob: "IV bob. Shaxsiy huquqlar", text: "Vijdon erkinligi kafolatlanadi. Har bir kishi xohlagan dinga e'tiqod qilish yoki hech qaysi dinga e'tiqod qilmaslik huquqiga ega." },
+  { mod: 32, bob: "IV bob. Shaxsiy huquqlar", text: "O'zbekiston Respublikasining fuqarolari davlat va jamiyat boshqaruvida bevosita va o'z vakillari orqali ishtirok etish huquqiga ega." },
+  { mod: 33, bob: "IV bob. Shaxsiy huquqlar", text: "Fuqarolar mitinglar, yig'ilishlar va namoyishlar o'tkazish huquqiga ega. Ushbu huquqdan foydalanish tartibi qonun bilan tartibga solinadi." },
+  // V BOB — IJTIMOIY-IQTISODIY HUQUQLAR
+  { mod: 36, bob: "V bob. Ijtimoiy-iqtisodiy huquqlar", text: "Har kim mehnat qilish, erkin kasb tanlash, adolatli mehnat sharoitlarida ishlash va qonuniy yo'l bilan himoyalanish huquqiga ega. Majburiy mehnatga yo'l qo'yilmaydi." },
+  { mod: 37, bob: "V bob. Ijtimoiy-iqtisodiy huquqlar", text: "Har kimning dam olish huquqi bor. Mehnat bilan band bo'lganlar uchun ish vaqtining chegaralanishi, haftalik dam olish kuni va yillik to'lov ta'tili qonun bilan kafolatlanadi." },
+  { mod: 38, bob: "V bob. Ijtimoiy-iqtisodiy huquqlar", text: "Fuqarolar keksayganda, mehnat layoqatini yo'qotganda va boquvchisidan mahrum bo'lganda, shuningdek, boshqa qonuniy hollarda ijtimoiy ta'minot olish huquqiga ega." },
+  { mod: 39, bob: "V bob. Ijtimoiy-iqtisodiy huquqlar", text: "Har kim tibbiy yordamdan foydalanish huquqiga ega. Fuqarolarga davlat tibbiy muassasalarida bepul tibbiy yordam ko'rsatiladi." },
+  { mod: 40, bob: "V bob. Ijtimoiy-iqtisodiy huquqlar", text: "Har kim bilim olish huquqiga ega. Maktabgacha ta'lim, umumiy o'rta, o'rta maxsus va kasb-hunar ta'limi bepuldir." },
+  { mod: 41, bob: "V bob. Ijtimoiy-iqtisodiy huquqlar", text: "Fuqarolar o'zaro birlashish, kasaba uyushmalari, siyosiy partiyalar va boshqa jamoat birlashmalarini tuzish huquqiga ega." },
+  // VI BOB — OILA
+  { mod: 63, bob: "VI bob. Oila", text: "Oila jamiyatning asosiy bo'g'ini va ijtimoiy institutdir. Nikoh faqat erkalik va ayollik asosida ixtiyoriy ravishda tuziladi." },
+  { mod: 64, bob: "VI bob. Oila", text: "Ota-onalar o'z farzandlarini voyaga yetgunlariga qadar boqish va tarbiyalash majburiyatini o'taydlar. Davlat va jamiyat yetim va ota-ona qarovisiz qolgan bolalarni boqishni ta'minlaydi." },
+  { mod: 65, bob: "VI bob. Oila", text: "Farzandlar ota-onalar oldida tengdir. Nosog'lom yoki mehnat layoqatini yo'qotgan ota-onalarni boqish farzandlarning burchidir." },
+  // MULK VA YERGA OID
+  { mod: 55, bob: "III bob. Iqtisodiy asoslar", text: "Er, yer osti boyliklari, suv, o'simlik va hayvonot dunyosi hamda boshqa tabiiy resurslar milliy boylikdir. Ulardan oqilona foydalanish davlat nazoratida bo'ladi." },
+  // SUD VA HUQUQIY HIMOYA
+  { mod: 19, bob: "II bob. Fuqarolik", text: "O'zbekiston Respublikasining fuqarosi, uning huquqlari va erkinliklari, shuningdek, ularni himoya qilishning kafolatlari. Davlat fuqarolar huquqlari va erkinligini ta'minlash majburiyatini oladi." },
+  { mod: 44, bob: "VI bob. Huquqiy himoya", text: "Har kimga o'z huquq va erkinliklarini sud orqali himoya qilish kafolatlanadi, davlat va jamoat organlari, mansabdor shaxslarning qonunga xilof qaror va harakatlaridan shu organlarga yuqori turuvchi organga yoki sudga shikoyat qilish huquqi ta'minlanadi." },
+  { mod: 45, bob: "VI bob. Huquqiy himoya", text: "Har kimning huquqlarini himoya qilish uchun yuridik yordam olish huquqi kafolatlanadi. Qonunda nazarda tutilgan hollarda yuridik yordam davlat hisobiga ko'rsatiladi." },
+  { mod: 46, bob: "VI bob. Huquqiy himoya", text: "Hech kim faqat o'ziga o'xshash jinoyati ko'rib chiqilib, hukm yoki oqlash qarori chiqarilmagan holda qayta jinoiy javobgarlikka yoki ma'muriy javobgarlikka tortilishi mumkin emas (ne bis in idem)." },
+  // SAYLOV
+  { mod: 117, bob: "XVIII bob. Saylov tizimi", text: "O'zbekiston Respublikasi fuqarolari 18 yoshga to'lgach, saylov huquqiga va referendum o'tkazish to'g'risidagi masalalarni hal etishga ishtirok etish huquqiga ega bo'ladi." },
+  { mod: 118, bob: "XVIII bob. Saylov tizimi", text: "Saylovlar umumiy, teng va to'g'ridan-to'g'ri saylov huquqi asosida yashirin ovoz berish yo'li bilan o'tkaziladi." },
+  // PREZIDENT
+  { mod: 90, bob: "XII bob. Prezident", text: "O'zbekiston Respublikasining Prezidenti davlat boshlig'i va ijroiya hokimiyatining rahbaridir." },
+  { mod: 91, bob: "XII bob. Prezident", text: "Prezident O'zbekiston Respublikasining fuqarosi bo'lishi, 35 yoshdan kam bo'lmasligi, kamida 10 yil O'zbekistonda muqim yashagan bo'lishi va davlat tilini bilishi shart." },
+  { mod: 94, bob: "XII bob. Prezident", text: "Prezident 7 yillik muddatga saylanadi. Bir shaxs Prezident lavozimida uch muddatdan ortiq bo'lishi mumkin emas." },
+  // OLIY MAJLIS
+  { mod: 76, bob: "XI bob. Oliy Majlis", text: "O'zbekiston Respublikasining Oliy Majlisi oliy vakillik organi bo'lib, qonun chiqarish vakolatini amalga oshiradi. Oliy Majlis ikki palatadan: Qonunchilik palatasi va Senatdan iborat." },
+  // KONSTITUTSIYAVIY HUQUQLAR UMUMIY
+  { mod: 13, bob: "II qism. Asosiy huquqlar va erkinliklar", text: "Demokratiya O'zbekistonda umumbashariy demokratik tamoyillarga asoslanadi. Fuqarolar va davlat organlari, mansabdor shaxslar, fuqarolar birlashmalari Konstitutsiya va qonunlar doirasida harakat qilishadi." },
+  { mod: 16, bob: "I bob", text: "O'zbekiston Respublikasining Konstitutsiyasi oliy yuridik kuchga ega. Davlat va uning organlari, mansabdor shaxslar, fuqarolar va ularning birlashmalari Konstitutsiyaga va qonunlarga muvofiq ish tutishi shart. Nord." },
+  { mod: 20, bob: "III bob. Insonning asosiy huquqlari", text: "Shaxsning huquqlari va erkinliklari faqat boshqa shaxslarning huquqlari va erkinliklarini ta'minlash, konstitutsiyaviy tuzumni va jamiyat axloqini himoya qilish maqsadida qonun bilan cheklanishi mumkin." },
+];
 
-function buyPremium() {
-  if (!AUTH.user) {
-    closeModal('premOverlay');
-    openAuth();
-    return;
-  }
-  toast('💳 To\'lov tizimi tez orada — Payme va Click ulanganda ishlaydi!');
-}
-
-// ===== CHAT LOGIC =====
+// ===== SAVOL-JAVOB MEXANIZMI =====
 const TOPICS = {
   mehnat: {
-    kw: ['mehnat','ish','shartnoma','ishdan','maosh','ish haqi','ta\'til','ishchi','kompensatsiya','bo\'shatish'],
+    kw: ['mehnat','ish','shartnoma','ishdan','maosh','ish haqi','ta\'til','ishchi','kompensatsiya','bo\'shatish','ishsiz','maosh','nafaqa','kasaba'],
     resp: () => ({
-      text: `**Mehnat huquqi bo'yicha ma'lumot:**\n\nO'zbekiston Mehnat Kodeksiga ko'ra:\n\n• **Ishdan bo'shatish** faqat asosli sabablar bilan va 2 hafta oldin ogohlantirish orqali mumkin (52-modda)\n• **Ish haqi** oyiga kamida 1 marta to'lanishi shart\n• **Yillik ta'til** 15 ish kunidan kam bo'lmasligi kerak\n• Shartnomani bir tomonlama buzish uchun kompensatsiya talab qilish mumkin`,
-      roadmap: ['Mehnat shartnomasini nusxasini oling','Buzilgan bandlarni yozma qayd eting','HR bo\'limiga rasmiy ariza yuboring','Mehnat inspektsiyasiga shikoyat yuboring','Kerak bo\'lsa sudga murojaat qiling'],
-      lawType: 'mehnat', needLawyer: true
+      text: `**Mehnat huquqi bo'yicha O'zbekiston Konstitutsiyasi:**\n\n📌 **37-modda:** Har kimning mehnat qilish huquqi bor. Erkin kasb tanlash, adolatli mehnat sharoitlari ta'minlanadi. Majburiy mehnatga yo'l qo'yilmaydi.\n\n📌 **36-modda:** Har kim mehnat qilish, erkin kasb tanlash va qonuniy yo'l bilan himoyalanish huquqiga ega.\n\n📌 **38-modda:** Mehnat layoqatini yo'qotgan fuqarolar ijtimoiy ta'minot olish huquqiga ega.`,
+      roadmap: ['Mehnat shartnomasini ko\'rib chiqing','HR bo\'limiga rasmiy ariza bering','Mehnat inspektsiyasiga (292-00-00) murojaat qiling','Sudga ariza berishni ko\'rib chiqing (44-moddaga asosan)'],
+      lawType: 'mehnat', needLawyer: true,
+      articles: [36, 37, 38]
     })
   },
   oila: {
-    kw: ['oila','ajralish','aliment','bola','nikoh','er','xotin','vasiyat','meros'],
+    kw: ['oila','ajralish','aliment','bola','nikoh','er','xotin','vasiyat','meros','turmush','divorce'],
     resp: () => ({
-      text: `**Oilaviy huquq bo'yicha ma'lumot:**\n\nO'zbekiston Oila Kodeksiga ko'ra:\n\n• **Ajralish** da mulk 50/50 taqsimlanadi (umumiy qoida)\n• **Aliment**: 1 bola — 25%, 2 bola — 33%, 3+ bola — 50% daromaddan\n• **Bola vasiyati** sudda hal qilinadi, bolaning manfaati asosiy mezon\n• Nikoh hujjatlari muhim dalil — saqlang`,
-      roadmap: ['Nikoh va mulk hujjatlarini to\'plang','Fuqarolik holati idorasiga murojaat qiling','Ajralish arizasini sudga bering','Mulk bo\'lish va aliment masalasini kelishib oling','Sud qarorini oling'],
-      lawType: 'oila', needLawyer: true
+      text: `**Oilaviy huquq bo'yicha O'zbekiston Konstitutsiyasi:**\n\n📌 **63-modda:** Oila jamiyatning asosiy bo'g'ini. Nikoh faqat ixtiyoriy ravishda va erkalik-ayollik asosida tuziladi.\n\n📌 **64-modda:** Ota-onalar farzandlarini voyaga yetgunlariga qadar boqish va tarbiyalash majburiyatini o'tadilar.\n\n📌 **65-modda:** Farzandlar ota-onalari oldida tengdir. Mehnat layoqatini yo'qotgan ota-onalarni boqish farzandlarning burchidir.`,
+      roadmap: ['Nikoh va mulk hujjatlarini to\'plang','Fuqarolik holati idorasiga murojaat qiling','Ajralish arizasini sudga bering','Aliment va bola vasiyati masalasini hal qiling'],
+      lawType: 'oila', needLawyer: true,
+      articles: [63, 64, 65]
     })
   },
   mulk: {
-    kw: ['uy','mulk','ijara','kvartira','xona','er','dala','sotib olish','sotish','uy-joy'],
+    kw: ['uy','mulk','ijara','kvartira','xona','er osti','dala','sotib olish','sotish','uy-joy','turar joy','yer','arenda'],
     resp: () => ({
-      text: `**Mulk huquqi bo'yicha ma'lumot:**\n\n• **Ijara shartnomasi** notarius orqali tasdiqlanishi tavsiya etiladi\n• **Mulk ro'yxatdan o'tkazish** Davlat mulk qo'mitasi orqali amalga oshiriladi\n• Ijara to'lovini bank orqali to'lang (iz qoldirish uchun)\n• Noqonuniy haydash holatida — 3 oy ichida sudga ariza bering`,
-      roadmap: ['Barcha shartnoma va hujjatlarni to\'plang','Mulkni davlat ro\'yxatidan tekshiring','To\'lov tarixini (cheklar, bank ko\'chirma) saqlang','Davlat mulk qo\'mitasiga murojaat qiling','Kerak bo\'lsa sudga murojaat qiling'],
-      lawType: 'mulk', needLawyer: true
+      text: `**Mulk huquqi bo'yicha O'zbekiston Konstitutsiyasi:**\n\n📌 **54-modda:** Barcha mulk shakllari teng huquqli bo'lib, qonun bilan bir xil himoya qilinadi. **Xususiy mulk daxlsizdir.** Mulk egasi o'z mulkidan o'zboshimchalik bilan mahrum etilishi mumkin emas.\n\n📌 **55-modda:** Er, yer osti boyliklari, suv va boshqa tabiiy resurslar milliy boylikdir. Ulardan oqilona foydalanish davlat nazoratida bo'ladi.`,
+      roadmap: ['Mulk hujjatlarini tekshiring','Davlat mulk qo\'mitasiga murojaat qiling','Ijara shartnomasini notarius orqali rasmiylashtiring','To\'lov tarixini saqlang (bank ko\'chirmalari)'],
+      lawType: 'mulk', needLawyer: true,
+      articles: [54, 55]
     })
   },
   biznes: {
-    kw: ['biznes','IE','machj','мхж','kompaniya','litsenziya','soliq','tadbirkor','ochish','ro\'yxat'],
+    kw: ['biznes','IE','machj','мхж','kompaniya','litsenziya','soliq','tadbirkor','ochish','ro\'yxat','startap','firma'],
     resp: () => ({
-      text: `**Biznes huquqi bo'yicha ma'lumot:**\n\n• **IE ochish**: pasport + ariza + davlat boji (my.gov.uz orqali online)\n• **MChJ**: nizom, ta'sischilar ro'yxati, minimal ustav kapitali\n• Ro'yxatdan o'tish **3 ish kuni** ichida amalga oshiriladi\n• Soliqqa ro'yxat (STIR) va bank hisob raqami oching`,
-      roadmap: ['Biznes turini tanlang (IE/MChJ)','Hujjatlarni tayyorlang','my.gov.uz da online ro\'yxatdan o\'ting','Soliq organiga ro\'yxatdan o\'ting','Bank hisob raqami oching'],
-      lawType: 'biznes', needLawyer: false
+      text: `**Biznes huquqi bo'yicha O'zbekiston Konstitutsiyasi:**\n\n📌 **53-modda:** Bozor муносабатларini rivojlantirish O'zbekiston iqtisodiy rivojlanishining asosi hisoblanadi.\n\n📌 **54-modda:** Barcha mulk shakllari (xususiy, davlat va boshqalar) teng huquqli bo'lib, qonun bilan bir xil himoya qilinadi.\n\n📌 **41-modda:** Fuqarolar o'zaro birlashish, kasaba uyushmalari va boshqa jamoat birlashmalarini tuzish huquqiga ega.`,
+      roadmap: ['Biznes turini tanlang (IE/MChJ)','my.gov.uz da online ro\'yxatdan o\'ting','Soliq organiga ro\'yxatdan o\'ting','Bank hisob raqami oching'],
+      lawType: 'biznes', needLawyer: false,
+      articles: [53, 54, 41]
     })
   },
   jinoyat: {
-    kw: ['jinoyat','jinoiy','qamoq','politsiya','tergovchi','ayblov','hibsga','ushlab olindi'],
+    kw: ['jinoyat','jinoiy','qamoq','politsiya','tergovchi','ayblov','hibsga','ushlab olindi','arrest','sud','jazoga'],
     resp: () => ({
-      text: `⚠️ **DIQQAT! Bu jiddiy masala:**\n\n• **Advokat talab qilish** huquqingiz bor — darhol!\n• Advokatsiz so'roqqa **javob bermang**\n• **72 soat** ichida ayblov e'lon qilinishi yoki ozod etilishi shart\n• **Jimlik huquqingiz bor** — o'zingizga qarshi guvohlik bermang`,
-      roadmap: ['⚡ Darhol advokat chaqiring yoki so\'rang','Hech narsa imzowlamang advokatsiz','Yaqinlaringizni xabardor qiling','Barcha dalillarni saqlang','Advokat bilan to\'liq ma\'lumot ulashing'],
-      lawType: 'jinoyat', needLawyer: true, urgent: true
+      text: `⚠️ **JINOIY HUQUQ — O'zbekiston Konstitutsiyasi:**\n\n📌 **25-modda:** Hech kim qonunda belgilangan tartibdan boshqacha usulda **hibsga olinishi yoki qamoqqa olinishi mumkin emas.** Har kim erkinlik va shaxsiy daxlsizlik huquqiga ega.\n\n📌 **26-modda:** **Aybsizlik prezumpsiyasi** — shaxs aybdorligi sudda isbotlanmagan ekan, u **aybsiz deb hisoblanadi.**\n\n📌 **27-modda:** Hech kim **qiynoqqa, zo'ravonlikka** yoki insoniy qadr-qimmatni kamsituvchi muomalaga tortilishi mumkin emas. **O'zingizga qarshi guvohlik bermaslik huquqingiz bor!**\n\n📌 **45-modda:** Har kimning **yuridik yordam olish huquqi** kafolatlanadi. Qonunda nazarda tutilgan hollarda bepul.`,
+      roadmap: ['⚡ DARHOL advokat so\'rang — bu huquqingiz (45-modda)','Hech narsa imzolamang advokatsiz','O\'zingizga qarshi guvohlik bermang (27-modda)','Yaqinlaringizni xabardor qiling','Barcha dalillarni saqlang'],
+      lawType: 'jinoyat', needLawyer: true, urgent: true,
+      articles: [25, 26, 27, 45]
     })
   },
   isteMol: {
-    kw: ['iste\'mol','tovar','sifatsiz','qaytarish','bank','sug\'urta','aldov','firibgarlik'],
+    kw: ['iste\'mol','tovar','sifatsiz','qaytarish','bank','sug\'urta','aldov','firibgarlik','savdo','mahsulot'],
     resp: () => ({
-      text: `**Iste'molchi huquqi bo'yicha ma'lumot:**\n\n• **Sifatsiz tovar** 14 kun ichida qaytarilishi mumkin\n• **Xizmat uchun pul** qaytarish talab qilish huquqingiz bor\n• Iste'molchilarni himoya qilish bo'yicha qo'mitaga murojaat qiling\n• **Bank muammolari** uchun Markaziy bank ilovasi orqali shikoyat yuboring`,
-      roadmap: ['Chek va hujjatlarni saqlang','Do\'kon/xizmat ko\'rsatuvchiga rasmiy ariza bering','Iste\'molchilar himoyasi qo\'mitasiga murojaat qiling','Kerak bo\'lsa sudga murojaat qiling'],
-      lawType: 'isteMol', needLawyer: false
+      text: `**Iste'molchi huquqi — O'zbekiston Konstitutsiyasi:**\n\n📌 **54-modda:** Xususiy mulk daxlsizdir. Iste'molchilarning huquqlari ham mulkiy huquqlar sifatida himoya qilinadi.\n\n📌 **44-modda:** Har kimga o'z **huquq va erkinliklarini sud orqali himoya qilish** kafolatlanadi.\n\n📌 **45-modda:** Har kimning **yuridik yordam olish huquqi** kafolatlanadi.`,
+      roadmap: ['Chek va hujjatlarni saqlang','Do\'konga rasmiy ariza bering','Iste\'molchilar himoyasi qo\'mitasiga murojaat qiling','Kerak bo\'lsa sudga murojaat qiling (44-modda)'],
+      lawType: 'isteMol', needLawyer: false,
+      articles: [54, 44, 45]
+    })
+  },
+  saylov: {
+    kw: ['saylov','ovoz','referendum','parlament','deputat','prezident','kandidat','saylovchi'],
+    resp: () => ({
+      text: `**Saylov huquqlari — O'zbekiston Konstitutsiyasi:**\n\n📌 **117-modda:** 18 yoshga to'lgan O'zbekiston fuqarolari **saylov huquqiga** ega bo'ladi.\n\n📌 **118-modda:** Saylovlar **umumiy, teng va to'g'ridan-to'g'ri** saylov huquqi asosida **yashirin ovoz berish** yo'li bilan o'tkaziladi.\n\n📌 **32-modda:** Fuqarolar davlat va jamiyat boshqaruvida **bevosita va o'z vakillari orqali** ishtirok etish huquqiga ega.`,
+      roadmap: ['Saylovchi ro\'yxatiga kiring','Ovoz berish joyingizni aniqlang','Saylov kuni fuqarolik pasportingizni olib boring'],
+      lawType: null, needLawyer: false,
+      articles: [117, 118, 32]
+    })
+  },
+  huquq: {
+    kw: ['huquq','erkinlik','asos','konstitutsiya','fuqaro','kafolat','demokratiya','sud','himoya'],
+    resp: () => ({
+      text: `**Asosiy fuqarolik huquqlari — O'zbekiston Konstitutsiyasi:**\n\n📌 **19-modda:** Davlat fuqarolar huquqlari va erkinligini ta'minlash majburiyatini oladi.\n\n📌 **29-modda:** **So'z va fikr erkinligi** huquqi kafolatlanadi. Har kim axborot izlash va tarqatish huquqiga ega.\n\n📌 **44-modda:** Har kimga **sud orqali himoya qilish** kafolatlanadi.\n\n📌 **45-modda:** **Yuridik yordam olish huquqi** kafolatlanadi.`,
+      roadmap: ['Huquqlaringizni o\'rganing (Konstitutsiya 16-moddasi)','Huquq buzilganda darhol yozma ariza bering','Kerak bo\'lsa sudga murojaat qiling'],
+      lawType: null, needLawyer: false,
+      articles: [19, 29, 44, 45]
     })
   }
 };
@@ -380,18 +538,44 @@ function detectTopic(text) {
   return null;
 }
 
+// Konstitutsiya moddasini qidirish
+function searchKonstitutsiya(text) {
+  const t = text.toLowerCase();
+  // "X-modda" yoki "X modda" formatini izlash
+  const modMatch = t.match(/(\d+)\s*[-–]?\s*modda/i) || t.match(/modda\s*[-–]?\s*(\d+)/i);
+  if (modMatch) {
+    const modNum = parseInt(modMatch[1]);
+    const found = KONSTITUTSIYA.find(k => k.mod === modNum);
+    if (found) return { found: true, article: found };
+  }
+  return { found: false };
+}
+
 function getResp(text) {
+  // Avval modda raqami bo'yicha qidirish
+  const modSearch = searchKonstitutsiya(text);
+  if (modSearch.found) {
+    const art = modSearch.article;
+    return {
+      text: `**O'zbekiston Respublikasi Konstitutsiyasi, ${art.mod}-modda:**\n\n*(${art.bob})*\n\n"${art.text}"`,
+      roadmap: null, lawType: null, needLawyer: false, topic: 'konstitutsiya',
+      articles: [art.mod],
+      isArticleLookup: true
+    };
+  }
+
   const topic = detectTopic(text);
   if (topic) return { ...TOPICS[topic].resp(), topic };
+
   return {
-    text: `**Savolingizni tushundim.**\n\nAniqroq yordam berish uchun bir nechta savol berishim kerak:\n\n• Bu qaysi shahar/viloyatda yuz berdi?\n• Hujjatlar bormi (shartnoma, chek va h.k.)?\n• Bu qachon sodir bo'ldi?\n\nYoki quyidagi sohalardan birini tanlang:`,
+    text: `**Savolingizni tushundim.**\n\nAniqroq yordam berish uchun bir nechta variant tanlang yoki aniq modda raqamini kiriting:`,
     roadmap: null, lawType: null, needLawyer: false, topic: null,
     showChips: true
   };
 }
 
 function topicAsk(key) {
-  const names = { mehnat:'Mehnat huquqi', oila:'Oilaviy huquq', mulk:'Mulk va uy-joy', biznes:'Biznes huquqi', jinoyat:'Jinoiy huquq', isteMol:"Iste'molchi huquqi" };
+  const names = { mehnat:'Mehnat huquqi', oila:'Oilaviy huquq', mulk:'Mulk va uy-joy', biznes:'Biznes huquqi', jinoyat:'Jinoiy huquq', isteMol:"Iste'molchi huquqi", saylov:'Saylov huquqi', huquq:'Asosiy fuqarolik huquqlari' };
   sendQ(`${names[key]} bo'yicha ma'lumot bering`);
 }
 
@@ -416,6 +600,7 @@ function now() {
 }
 
 function fmt(text) {
+  if (!text) return '';
   return text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
 }
 
@@ -445,6 +630,88 @@ function addTyping() {
 
 function removeTyping() { const el=document.getElementById('typing'); if(el) el.remove(); }
 
+// ===== GPT API CALL =====
+async function askGPT(userQuestion) {
+  const key = GPT.key;
+  if (!key) return null;
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userQuestion }
+        ],
+        temperature: 0.4,
+        max_tokens: 1200
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API xatosi');
+    }
+    const data = await res.json();
+    return data.choices[0].message.content;
+  } catch(e) {
+    console.error('GPT xato:', e);
+    return null;
+  }
+}
+
+// ===== GPT API SETTINGS =====
+function openApiSettings() {
+  openModal('apiOverlay');
+  const inp = document.getElementById('apiKeyInput');
+  if (inp) inp.value = GPT.key;
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { GPT.clear(); toast('API kalit o\'chirildi'); }
+  else if (!val.startsWith('sk-')) { document.getElementById('apiKeyErr').textContent = '❌ Noto\'g\'ri format (sk- bilan boshlanishi kerak)'; return; }
+  else { GPT.save(val); toast('✅ GPT API kaliti saqlandi! Endi AI keng javob beradi.'); }
+  closeModal('apiOverlay');
+  updateNav();
+}
+
+// ===== RENDER GPT RESPONSE =====
+function renderGptBubble(bubble, gptText, userQ) {
+  // GPT markdown ni HTML ga o'girish
+  let html = gptText
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^#{1,3}\s(.+)$/gm, '<strong style="font-size:15px;color:var(--gold)">$1</strong>')
+    .replace(/^[-•]\s(.+)$/gm, '<div style="padding:3px 0 3px 12px;border-left:2px solid var(--blue);margin:3px 0">$1</div>')
+    .replace(/\n/g, '<br>');
+  bubble.innerHTML = html;
+
+  // Mos advokatlarni ham ko'rsat
+  const topic = detectTopic(userQ);
+  if (topic && TOPICS[topic]) {
+    const resp = TOPICS[topic].resp();
+    if (resp.needLawyer && resp.lawType) {
+      const lawyers = LAWYERS.filter(l => l.specKey === resp.lawType).slice(0,2);
+      if (lawyers.length) {
+        const lb = document.createElement('div');
+        lb.className = 'lawyer-rec-box';
+        lb.style.marginTop = '12px';
+        lb.innerHTML = `<h4>👨‍⚖️ Mos advokatlar:</h4>` +
+          lawyers.map(l => `<div class="mini-law" onclick="openLawyer(${l.id})"><div class="mini-av">${l.emoji}</div><div class="mini-info"><strong>${l.name}</strong><span>${l.spec} · ${l.loc}</span></div><div class="mini-rat">${l.rating}⭐</div></div>`).join('') +
+          `<button class="see-all-btn" onclick="goPage('lawyers')">Barcha advokatlarni ko'rish →</button>`;
+        bubble.appendChild(lb);
+      }
+    }
+  }
+
+  const disc = document.createElement('div');
+  disc.className = 'ai-disc';
+  disc.innerHTML = '🤖 <strong>GPT-4o-mini</strong> · 📖 <strong>Manba:</strong> O\'zbekiston Respublikasi Konstitutsiyasi &nbsp;|&nbsp; ⚠️ Aniq maslahat uchun advokatga murojaat qiling.';
+  bubble.appendChild(disc);
+}
+
+// ===== SEND MESSAGE (GPT + fallback) =====
 async function sendMsg() {
   const inp = document.getElementById('inp');
   const txt = inp.value.trim();
@@ -454,14 +721,33 @@ async function sendMsg() {
   addMsg(txt, 'user');
   addTyping();
 
-  await new Promise(r => setTimeout(r, 900 + Math.random() * 700));
-  removeTyping();
+  // GPT bor bo'lsa ishlatamiz
+  if (GPT.key) {
+    const gptAnswer = await askGPT(txt);
+    removeTyping();
+    if (gptAnswer) {
+      const msgs = document.getElementById('msgs');
+      const div = document.createElement('div');
+      div.className = 'msg';
+      div.innerHTML = `<div class="msg-av">⚖️</div><div class="msg-body"><div class="bubble" id="bubble-${Date.now()}"></div><div class="mtime">${now()}</div></div>`;
+      msgs.appendChild(div);
+      const bubble = div.querySelector('.bubble');
+      renderGptBubble(bubble, gptAnswer, txt);
+      AUTH.addHistory(txt, gptAnswer, detectTopic(txt) || 'umumiy');
+      msgs.scrollTop = msgs.scrollHeight;
+      return;
+    }
+    toast('⚠️ GPT javob bermadi, mahalliy javobdan foydalanamiz');
+  } else {
+    await new Promise(r => setTimeout(r, 800 + Math.random() * 500));
+    removeTyping();
+  }
 
+  // Fallback — mahalliy javob
   const resp = getResp(txt);
   const msgEl = addMsg(resp.text, 'ai');
   const bubble = msgEl.querySelector('.bubble');
 
-  // Chips agar umumiy savol
   if (resp.showChips) {
     const cd = document.createElement('div');
     cd.className = 'chips';
@@ -470,11 +756,24 @@ async function sendMsg() {
       ['🏠 Mulk','Mulk va uy-joy masalalarini tushuntiring'],
       ['👨‍👩‍👧 Oila','Oilaviy huquq haqida ma\'lumot bering'],
       ['📋 Biznes','Biznes ochish uchun nima kerak?'],
+      ['⚖️ Jinoiy','Jinoiy ish bo\'yicha nima qilishim kerak?'],
+      ['🗳️ Saylov','Saylov huquqlari haqida tushuntiring'],
     ].map(([l,q]) => `<button class="chip" onclick="sendQ('${q}')">${l}</button>`).join('');
     bubble.appendChild(cd);
   }
 
-  // Roadmap
+  if (resp.articles && resp.articles.length && !resp.isArticleLookup) {
+    const artBox = document.createElement('div');
+    artBox.className = 'const-box';
+    artBox.innerHTML = `<h4>📖 Konstitutsiya manbalari:</h4>` +
+      resp.articles.map(num => {
+        const art = KONSTITUTSIYA.find(k => k.mod === num);
+        if (!art) return '';
+        return `<div class="const-item"><span class="const-mod">${num}-modda</span><span class="const-bob">${art.bob}</span></div>`;
+      }).filter(x=>x).join('');
+    bubble.appendChild(artBox);
+  }
+
   if (resp.roadmap && resp.roadmap.length) {
     const rb = document.createElement('div');
     rb.className = 'roadmap-box';
@@ -483,41 +782,31 @@ async function sendMsg() {
     bubble.appendChild(rb);
   }
 
-  // Lawyer recommendation
   if (resp.needLawyer && resp.lawType) {
-    const lawyers = LAWYERS.filter(l => l.specKey === resp.lawType).slice(0,3);
+    const lawyers = LAWYERS.filter(l => l.specKey === resp.lawType).slice(0,2);
     if (lawyers.length) {
       const lb = document.createElement('div');
       lb.className = 'lawyer-rec-box';
       lb.innerHTML = `<h4>👨‍⚖️ Mos advokatlar:</h4>` +
-        lawyers.map(l => `
-          <div class="mini-law" onclick="openLawyer(${l.id})">
-            <div class="mini-av">${l.emoji}</div>
-            <div class="mini-info"><strong>${l.name}</strong><span>${l.spec} · ${l.loc}</span></div>
-            <div class="mini-rat">${l.rating}⭐</div>
-          </div>`).join('') +
+        lawyers.map(l => `<div class="mini-law" onclick="openLawyer(${l.id})"><div class="mini-av">${l.emoji}</div><div class="mini-info"><strong>${l.name}</strong><span>${l.spec} · ${l.loc}</span></div><div class="mini-rat">${l.rating}⭐</div></div>`).join('') +
         `<button class="see-all-btn" onclick="goPage('lawyers')">Barcha advokatlarni ko'rish →</button>`;
       bubble.appendChild(lb);
     }
   }
 
-  // Disclaimer
   const disc = document.createElement('div');
   disc.className = 'ai-disc';
-  disc.textContent = '⚠️ Bu umumiy huquqiy ma\'lumot. Aniq va yakuniy maslahat uchun litsenziyalangan advokatga murojaat qiling.';
+  disc.innerHTML = '📖 <strong>Manba:</strong> O\'zbekiston Respublikasi Konstitutsiyasi · <span style="color:var(--text3);font-size:11px">🔑 GPT ulash uchun API tugmasini bosing</span>';
   bubble.appendChild(disc);
 
-  // History saqlash
-  if (AUTH.user) AUTH.addHistory(txt, resp.topic || 'umumiy');
-
-  const msgs = document.getElementById('msgs');
-  msgs.scrollTop = msgs.scrollHeight;
+  AUTH.addHistory(txt, resp.text, resp.topic || 'umumiy');
+  document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
 }
 
 function newChat() {
   const msgs = document.getElementById('msgs');
   msgs.innerHTML = '';
-  addMsg('Yangi savol uchun tayyorman! Muammongizni yozing 👇', 'ai');
+  addMsg('Yangi savol uchun tayyorman! 🎤 Gapiring yoki yozing 👇', 'ai');
 }
 
 // ===== MODALS =====
@@ -532,33 +821,345 @@ function toast(msg, dur=3000) {
   setTimeout(() => t.classList.remove('show'), dur);
 }
 
-// ===== KEYBOARD CLOSE MODAL =====
+// ===== KEYBOARD =====
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    ['authOverlay','lawyerOverlay','premOverlay'].forEach(id => closeModal(id));
-  }
+  if (e.key === 'Escape') ['lawyerOverlay','apiOverlay','aiModalOverlay'].forEach(id => closeModal(id));
 });
+
+// ============================================================
+// ===== 📄 HUJJAT GENERATORI =====
+// ============================================================
+
+const DOC_TEMPLATES = [
+  { id:'ishdan-bosh', cat:'mehnat', isPremium:false, icon:'📋',
+    name:"Ishdan bo'shatish arizasi (o'z xohishi)", desc:"O'z xohishi bilan ishdan ketish uchun rasmiy ariza",
+    fields:[
+      {id:'ism',label:'Ism Familiya',ph:'Abdullayev Jasur Hamidovich'},
+      {id:'lavozim',label:'Lavozimingiz',ph:'Buxgalter'},
+      {id:'rahbar',label:'Rahbar ismi',ph:'Karimov Bobur Salimovich'},
+      {id:'tashkilot',label:'Tashkilot nomi',ph:'"Baxt" MChJ'},
+      {id:'oxirgi_kun',label:'Oxirgi ish kuni',ph:'15.04.2025'},
+      {id:'sana',label:'Ariza sanasi',ph:'01.04.2025'},
+    ],
+    tpl:(f)=>`O'ZBEKISTON RESPUBLIKASI\n${f.tashkilot} DIREKTORI\n${f.rahbar} JANOBLARIGA\n\nXodim: ${f.ism} (${f.lavozim})\n\nARIZA\n\nSizdan ${f.oxirgi_kun} sanadan boshlab meni o'z xohishim bilan bo'shatishingizni so'rayman.\n\nO'zR Mehnat Kodeksining 97-moddasi asosida taqdim etiladi.\n\nSana: ${f.sana}         Imzo: ____________ / ${f.ism} /`
+  },
+  { id:'mehnat-shikoyat', cat:'mehnat', isPremium:false, icon:'⚠️',
+    name:"Noqonuniy ishdan bo'shatishga shikoyat", desc:"Mehnat inspeksiyasiga rasmiy shikoyat arizasi",
+    fields:[
+      {id:'ism',label:'Ism Familiya',ph:'Abdullayev Jasur'},
+      {id:'tel',label:'Telefon',ph:'+998901234567'},
+      {id:'tashkilot',label:'Tashkilot nomi',ph:'"Baxt" MChJ'},
+      {id:'sana_bosh',label:"Ishdan bo'shatilgan sana",ph:'01.03.2025'},
+      {id:'sabab',label:'Nima uchun noqonuniy?',ph:'Ogohlantirishsiz, hujjatsiz bo\'shatildi'},
+      {id:'talab',label:'Talabingiz',ph:'Qayta ishga qabul qilish'},
+      {id:'sana',label:'Ariza sanasi',ph:'10.03.2025'},
+    ],
+    tpl:(f)=>`O'ZBEKISTON RESPUBLIKASI MEHNAT INSPEKSIYASIGA\n\nAriza beruvchi: ${f.ism}  Tel: ${f.tel}\n\nSHIKOYAT ARIZASI\n\nMen, ${f.ism}, ${f.sana_bosh} kuni ${f.tashkilot} dan noqonuniy ravishda ishdan bo'shatildim.\n\nNoqonuniylik sababi: ${f.sabab}\n\nMK 100-103-moddalari asosida ogohlantirishsiz ishdan bo'shatish qonunga ziddir.\n\nTalabim: ${f.talab}\n\nSana: ${f.sana}         Imzo: ____________ / ${f.ism} /`
+  },
+  { id:'aliment', cat:'oila', isPremium:false, icon:'👶',
+    name:"Aliment to'lash to'g'risida ariza", desc:"Aliment undirish uchun sudga ariza",
+    fields:[
+      {id:'ariza_beruvchi',label:"Ariza beruvchi (ism)",ph:'Karimova Zilola'},
+      {id:'javobgar',label:'Javobgar (ism)',ph:'Karimov Sanjar'},
+      {id:'bola',label:"Bola(lar) ismi va yoshi",ph:'Karimov Amir, 5 yosh'},
+      {id:'nikoh_sana',label:"Nikoh bekor qilingan sana",ph:'01.01.2024'},
+      {id:'sana',label:'Ariza sanasi',ph:'01.04.2025'},
+    ],
+    tpl:(f)=>`O'ZBEKISTON RESPUBLIKASI\n[SHAHAR/TUMAN] SUDIGA\n\nAriza beruvchi: ${f.ariza_beruvchi}\nJavobgar: ${f.javobgar}\n\nDA'VO ARIZASI (Aliment to'lash)\n\nMen, ${f.ariza_beruvchi}, ${f.javobgar} bilan ${f.nikoh_sana} kuni ajrashdim.\nUmumiy farzandim: ${f.bola} — hozirda mening qaramog'imda.\n\nOila Kodeksi 99-105-moddalari asosida:\n• 1 bola uchun: daromadning 25%\n\nTalabim: ${f.javobgar} dan ${f.bola} uchun aliment undirilsin.\n\nSana: ${f.sana}         Imzo: ____________ / ${f.ariza_beruvchi} /`
+  },
+  { id:'ijara', cat:'mulk', isPremium:false, icon:'🏠',
+    name:'Uy-joy ijara shartnomasi', desc:'Rasmiy ijara shartnomasi',
+    fields:[
+      {id:'beruvchi',label:'Ijaraga beruvchi (ism)',ph:'Toshmatov Hamid'},
+      {id:'ijarachi',label:'Ijarachi (ism)',ph:'Yusupov Sardor'},
+      {id:'manzil',label:'Uy manzili',ph:'Toshkent, Chilonzor, 15-uy, 42-xonadon'},
+      {id:'summa',label:"Oylik ijara narxi (so'm)",ph:"2,500,000"},
+      {id:'muddat',label:'Shartnoma muddati',ph:'12 oy'},
+      {id:'sana',label:'Shartnoma sanasi',ph:'01.04.2025'},
+    ],
+    tpl:(f)=>`IJARA SHARTNOMASI\n\nSana: ${f.sana}\n\nIjaraga beruvchi: ${f.beruvchi}\nIjarachi: ${f.ijarachi}\n\nPREDMET: ${f.manzil}\n\nOylik ijara: ${f.summa} so'm\nMuddat: ${f.muddat}\nTo'lov: Har oy 1-sanasiga qadar\n\nImzolar:\n${f.beruvchi}: ____________\n${f.ijarachi}: ____________`
+  },
+  { id:'istemol', cat:'mulk', isPremium:false, icon:'🛒',
+    name:"Iste'molchi shikoyati", desc:"Sifatsiz tovar yoki xizmat uchun shikoyat",
+    fields:[
+      {id:'ism',label:'Ism Familiya',ph:'Nazarov Ulugbek'},
+      {id:'dokon',label:"Do'kon/kompaniya",ph:'"Texnomart"'},
+      {id:'tovar',label:'Tovar nomi',ph:'Samsung Galaxy A54'},
+      {id:'narx',label:"To'langan narx",ph:"3,500,000 so'm"},
+      {id:'muammo',label:'Muammo',ph:'Ekran 1 haftada sinib qoldi'},
+      {id:'talab',label:'Talabingiz',ph:'Almashtirish yoki pulni qaytarish'},
+    ],
+    tpl:(f)=>`SHIKOYAT — ${f.dokon} rahbariyatiga\n\nAriza beruvchi: ${f.ism}\n\nMen ${f.dokon} dan ${f.tovar} ni ${f.narx} ga sotib oldim.\n\nMuammo: ${f.muammo}\n\n"Iste'molchilarni himoya qilish" qonuni asosida sifatsiz tovarni qaytarish huquqim bor.\n\nTalabim: ${f.talab}\n\nAks holda Inspeksiyaga va sudga murojaat qilaman.\n\nSana: ${new Date().toLocaleDateString('uz-UZ')}         ${f.ism}`
+  },
+  { id:'prokuratura', cat:'sud', isPremium:true, icon:'⚖️',
+    name:'Prokuraturaga shikoyat', desc:"Qonun buzilishi bo'yicha prokuraturaga ariza",
+    fields:[
+      {id:'ism',label:'Ism Familiya',ph:'Ergashev Sanjar'},
+      {id:'tel',label:'Telefon',ph:'+998901234567'},
+      {id:'manzil',label:'Yashash manzilingiz',ph:'Toshkent sh., ...'},
+      {id:'shikoyat',label:'Kim haqida shikoyat?',ph:'Chilonzor tumani...'},
+      {id:'qonun',label:'Qonun buzarlik',ph:'Qonunsiz qurilishga ruxsat berildi'},
+      {id:'sana',label:'Sana',ph:'01.04.2025'},
+    ],
+    tpl:(f)=>`O'ZBEKISTON RESPUBLIKASI PROKURATURA ORGANLARIGA\n\nAriza beruvchi: ${f.ism}  Tel: ${f.tel}\nManzil: ${f.manzil}\n\nSHIKOYAT\n\n${f.shikoyat} tomonidan quyidagi qonun buzarlik sodir etilgan:\n${f.qonun}\n\nTegishli tekshiruv o'tkazilsin va javobgarlar tortilsin.\n\nSana: ${f.sana}         Imzo: ____________ / ${f.ism} /`
+  },
+  { id:'davao', cat:'sud', isPremium:true, icon:'🏛️',
+    name:"Sudga da'vo arizasi", desc:"Fuqarolik da'vosi uchun rasmiy ariza",
+    fields:[
+      {id:'davogar',label:"Da'vogar (ism)",ph:'Umarov Behruz'},
+      {id:'javobgar',label:'Javobgar',ph:'Nazarov Sherzod'},
+      {id:'summa',label:"Da'vo summasi",ph:"15,000,000 so'm"},
+      {id:'voqea',label:"Qanday huquq buzildi?",ph:'Qarz qaytarilmadi'},
+      {id:'dalil',label:'Asosiy dalil',ph:'Raspiskan mavjud'},
+      {id:'talab',label:'Talabingiz',ph:'Qarzni undirish'},
+      {id:'sana',label:'Sana',ph:'01.04.2025'},
+    ],
+    tpl:(f)=>`O'ZBEKISTON RESPUBLIKASI [SHAHAR] SUDIGA\n\nDA'VOGAR: ${f.davogar}\nJAVOBGAR: ${f.javobgar}\nDA'VO SUMMASI: ${f.summa}\n\nDA'VO ARIZASI\n\nVoqea: ${f.voqea}\nDalil: ${f.dalil}\n\nTalabim: ${f.talab}\n\nSana: ${f.sana}         Da'vogar: ____________ / ${f.davogar} /`
+  },
+  { id:'ishonchnoma', cat:'umumiy', isPremium:false, icon:'📝',
+    name:"Ishonchnoma (Doverennost')", desc:'Birovga vakolat berish uchun ishonchnoma',
+    fields:[
+      {id:'beruvchi',label:'Ishonchnoma beruvchi',ph:'Toshmatov Hamid Salimovich'},
+      {id:'pp_b',label:'Passport (beruvchi)',ph:'AB 1234567'},
+      {id:'oluvchi',label:'Ishonchnoma oluvchi',ph:'Toshmatova Malika'},
+      {id:'pp_o',label:'Passport (oluvchi)',ph:'AA 9876543'},
+      {id:'vakolat',label:'Berilayotgan vakolat',ph:'Bankdan pul olish, hujjat imzolash'},
+      {id:'muddat',label:'Amal qilish muddati',ph:'1 yil'},
+      {id:'sana',label:'Sana',ph:'01.04.2025'},
+    ],
+    tpl:(f)=>`ISHONCHNOMA\n\nMen, ${f.beruvchi} (pasport: ${f.pp_b}),\nushbu ishonchnomani ${f.oluvchi} (pasport: ${f.pp_o}) ga beraman.\n\nVAKOLAT: ${f.vakolat}\nMUDDAT: ${f.muddat}\n\nSana: ${f.sana}\nImzo: ____________ / ${f.beruvchi} /\n\n[Notarius tavsiya etiladi]`
+  },
+];
+
+let _currentTemplate = null;
+let _docFields = {};
+
+function renderDocGrid(cat='all') {
+  const grid = document.getElementById('docGrid');
+  if (!grid) return;
+  const list = cat === 'all' ? DOC_TEMPLATES : DOC_TEMPLATES.filter(t => t.cat === cat);
+  grid.innerHTML = list.map(t => `
+    <div class="doc-card${t.isPremium?' doc-premium':''}" onclick="selectTemplate('${t.id}')">
+      <div class="doc-card-ico">${t.icon}</div>
+      <div class="doc-card-info">
+        <div class="doc-card-name">${t.name}</div>
+        <div class="doc-card-desc">${t.desc}</div>
+      </div>
+      ${t.isPremium
+        ? '<span class="doc-prem-badge">👑 Premium</span>'
+        : '<span class="doc-free-badge">✓ Bepul</span>'}
+    </div>`).join('');
+}
+
+function filterDocs(cat, btn) {
+  document.querySelectorAll('.doc-cat').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDocGrid(cat);
+}
+
+function selectTemplate(id) {
+  const t = DOC_TEMPLATES.find(x => x.id === id);
+  if (!t) return;
+  if (t.isPremium && AUTH.user?.plan !== 'premium') {
+    toast('👑 Bu shablon Premium uchun!');
+    setTimeout(() => goPage('premium'), 1500);
+    return;
+  }
+  _currentTemplate = t;
+  _docFields = {};
+  ['docStep1','docStep2','docStep3'].forEach((s,i) =>
+    document.getElementById(s).style.display = i===1?'block':'none');
+  document.getElementById('docFormTitle').textContent = t.icon + ' ' + t.name;
+  document.getElementById('docFormDesc').textContent = t.desc;
+  document.getElementById('docFormFields').innerHTML = t.fields.map(f => `
+    <div class="fgroup">
+      <label>${f.label}</label>
+      <input class="finput" id="dff_${f.id}" placeholder="${f.ph}" oninput="_docFields['${f.id}']=this.value"/>
+    </div>`).join('');
+}
+
+function backToTemplates() {
+  ['docStep1','docStep2','docStep3'].forEach((s,i) =>
+    document.getElementById(s).style.display = i===0?'block':'none');
+}
+
+function backToForm() {
+  document.getElementById('docStep2').style.display = 'block';
+  document.getElementById('docStep3').style.display = 'none';
+}
+
+function getDocValues() {
+  const v = {};
+  _currentTemplate.fields.forEach(f => {
+    v[f.id] = document.getElementById('dff_'+f.id)?.value || '';
+  });
+  return v;
+}
+
+function previewDoc() {
+  _docFields = getDocValues();
+  const empty = _currentTemplate.fields.find(f => !_docFields[f.id]);
+  if (empty) { toast('⚠️ "'+empty.label+'" maydonini to\'ldiring'); return; }
+  const text = _currentTemplate.tpl(_docFields);
+  document.getElementById('docStep2').style.display = 'none';
+  document.getElementById('docStep3').style.display = 'block';
+  document.getElementById('docPreviewBox').innerHTML =
+    '<pre class="doc-preview-text">'+text+'</pre>';
+}
+
+function autoFillWithAI() { openModal('aiModalOverlay'); }
+
+async function processAISituation() {
+  const sit = document.getElementById('aiSituationText').value.trim();
+  if (!sit) { toast('Vaziyatingizni yozing'); return; }
+  closeModal('aiModalOverlay');
+  if (!GPT.key) {
+    toast('⚠️ GPT ulanmagan. Navbar da 🔑 API tugmasini bosing.');
+    return;
+  }
+  toast('🤖 AI to\'ldirmoqda...');
+  const fieldNames = _currentTemplate.fields.map(f=>'"'+f.id+'"'+'('+f.label+')').join(', ');
+  const prompt = `Vaziyat:\n${sit}\n\nQuyidagi JSON maydonlarni o'zbek tilida to'ldiring (faqat JSON qaytaring):\n{${_currentTemplate.fields.map(f=>'"'+f.id+'": ""').join(', ')}}`;
+  const res = await askGPT(prompt);
+  if (res) {
+    try {
+      const m = res.match(/\{[\s\S]+\}/);
+      if (m) {
+        const filled = JSON.parse(m[0]);
+        Object.entries(filled).forEach(([k,v]) => {
+          const el = document.getElementById('dff_'+k);
+          if (el) { el.value = v; _docFields[k] = v; }
+        });
+        toast('✅ AI muvaffaqiyatli to\'ldirdi!');
+      }
+    } catch(e) { toast('Qo\'lda to\'ldiring'); }
+  }
+}
+
+function printDoc() {
+  _docFields = getDocValues();
+  const text = _currentTemplate.tpl(_docFields);
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${_currentTemplate.name}</title>
+    <style>body{font-family:"Times New Roman",serif;font-size:14pt;line-height:1.9;padding:50px 70px;max-width:780px;margin:0 auto}
+    pre{white-space:pre-wrap;font-family:inherit;font-size:14pt}
+    @media print{body{padding:20px 40px}}</style>
+    </head><body><pre>${text}</pre></body></html>`);
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 500);
+}
+
+function downloadPDF() {
+  printDoc();
+  toast('🖨️ Chop etish oynasida: "PDF ga saqlash" ni tanlang');
+}
+
+// ============================================================
+// ===== 🎤 OVOZLI YORDAMCHI =====
+// ============================================================
+
+let _voiceActive = false;
+let _recognition = null;
+
+function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('⚠️ Chrome yoki Edge brauzerini ishlating'); return null; }
+  const rec = new SR();
+  rec.lang = 'uz-UZ';
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.onstart = () => {
+    _voiceActive = true;
+    const btn = document.getElementById('voiceBtn');
+    if (btn) { btn.classList.add('voice-active'); btn.textContent = '🔴'; }
+    const hint = document.getElementById('voiceHint');
+    if (hint) hint.textContent = '🔴 Gapiring... (to\'xtatish uchun yana bosing)';
+    const inp = document.getElementById('inp');
+    if (inp) inp.placeholder = '🎤 Tinglanmoqda...';
+  };
+  rec.onresult = (e) => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    const inp = document.getElementById('inp');
+    if (inp) inp.value = t;
+    if (e.results[e.results.length-1].isFinal) {
+      stopVoice();
+      setTimeout(() => sendMsg(), 400);
+    }
+  };
+  rec.onerror = (e) => { stopVoice(); if (e.error !== 'no-speech') toast('🎤 Xato: '+e.error); };
+  rec.onend = () => stopVoice();
+  return rec;
+}
+
+function toggleVoice() {
+  if (_voiceActive) { stopVoice(); return; }
+  if (!_recognition) _recognition = initVoice();
+  if (!_recognition) return;
+  try { _recognition.start(); } catch(e) { _recognition = initVoice(); if(_recognition) _recognition.start(); }
+}
+
+function stopVoice() {
+  _voiceActive = false;
+  const btn = document.getElementById('voiceBtn');
+  if (btn) { btn.classList.remove('voice-active'); btn.textContent = '🎤'; }
+  const hint = document.getElementById('voiceHint');
+  if (hint) hint.textContent = '🎤 Ovoz | Enter — yuborish | Shift+Enter — yangi qator';
+  const inp = document.getElementById('inp');
+  if (inp) inp.placeholder = 'Huquqiy savolingizni yozing yoki gaplab bering...';
+  try { if (_recognition) _recognition.stop(); } catch(e) {}
+}
+
+// ============================================================
+// ===== 💳 PREMIUM / TO'LOV =====
+// ============================================================
+
+function buyPremium(provider) {
+  if (!AUTH.user) { showRegPage(); return; }
+  const name = provider === 'payme' ? 'Payme' : 'Click';
+  toast(`💳 ${name} to'lov tizimi ulanyapti...`);
+  setTimeout(() => {
+    if (confirm(`✅ ${name} orqali 49,900 so'm to'lovni tasdiqlaysizmi?\n\n(Demo rejim — haqiqiy to'lov emas)`)) {
+      const u = AUTH.user;
+      u.plan = 'premium';
+      u.plan_until = new Date(Date.now()+30*24*60*60*1000).toISOString();
+      AUTH.save(u);
+      const users = getUsers();
+      const idx = users.findIndex(x => x.phone === u.phone);
+      if (idx >= 0) { users[idx] = u; saveUsers(users); }
+      updateNav();
+      toast('🎉 Premium faollashtirildi! 30 kun muddatida foydalaning.');
+      goPage('chat');
+    }
+  }, 1500);
+}
+
+function contactCorp() {
+  toast('📞 +998 90 000 00 00 | adalatai@gmail.com — Korporativ bo\'lim');
+}
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
-  updateNav();
-  goPage('home');
-
-  // Chat sahifasi uchun boshlang'ich xabar
+  if (AUTH.user) {
+    goPage('chat');
+  } else {
+    showRegPage();
+  }
   const msgs = document.getElementById('msgs');
   if (msgs && !msgs.children.length) {
-    addMsg(`Assalomu alaykum! Men **Adalat AI** — huquqiy yordamchingizman. 👋\n\nSavolingizni yozing yoki quyidagi sohalardan birini tanlang:`, 'ai');
-    const msgEl = msgs.lastElementChild;
-    const bubble = msgEl.querySelector('.bubble');
+    addMsg(`Assalomu alaykum! Men **Adalat AI** — huquqiy yordamchingizman. 👋\n\n🎤 Gaplab savol bering yoki 📄 Hujjat yarating. Sohani tanlang:`, 'ai');
+    const bubble = msgs.lastElementChild.querySelector('.bubble');
     const cd = document.createElement('div');
     cd.className = 'chips';
     cd.innerHTML = [
-      ['💼 Mehnat huquqi','Mehnat huquqi bo\'yicha ma\'lumot bering'],
-      ['🏠 Mulk va uy-joy','Mulk va uy-joy masalalarini tushuntiring'],
-      ['👨‍👩‍👧 Oilaviy huquq','Oilaviy huquq haqida ma\'lumot bering'],
-      ['📋 Biznes huquqi','Biznes ochish uchun nima kerak?'],
-      ['⚖️ Jinoiy huquq','Jinoiy ish bo\'yicha nima qilishim kerak?'],
-    ].map(([l,q]) => `<button class="chip" onclick="sendQ('${q}')">${l}</button>`).join('');
+      ['💼 Mehnat','Mehnat huquqi bo\'yicha ma\'lumot bering'],
+      ['🏠 Mulk','Mulk va uy-joy masalalarini tushuntiring'],
+      ['👨‍👩‍👧 Oila','Oilaviy huquq haqida ma\'lumot bering'],
+      ['📋 Biznes','Biznes ochish uchun nima kerak?'],
+      ['⚖️ Jinoiy','Jinoiy ish bo\'yicha nima qilishim kerak?'],
+    ].map(([l,q]) => `<button class="chip" onclick="sendQ('${q}')">${l}</button>`).join('')
+    + `<button class="chip chip-docs" onclick="goPage('docs')">📄 Hujjat yaratish</button>`;
     bubble.appendChild(cd);
   }
 });
+
