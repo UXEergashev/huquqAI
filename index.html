@@ -54,14 +54,44 @@
           <div id="authRegForm">
             <h2>Hisob yarating</h2>
             <p class="auth-sub">Bepul — 2 daqiqada tayyor!</p>
+            <div class="fgroup"><label>Rolni tanlang</label>
+              <select id="authRegRole" class="finput" onchange="toggleAdvokatFields()">
+                <option value="user">Oddiy foydalanuvchi</option>
+                <option value="lawyer">Advokat</option>
+              </select>
+            </div>
             <div class="fgroup"><label>Ism va Familiya</label><input id="authRegName" type="text" placeholder="Ismingiz Familiyangiz" class="finput"/></div>
             <div class="fgroup"><label>Telefon raqam</label><input id="authRegPhone" type="tel" placeholder="+998901234567" class="finput"/></div>
             <div class="fgroup"><label>Parol</label><input id="authRegPass" type="password" placeholder="Kamida 6 ta belgi" class="finput"/></div>
             <div class="fgroup"><label>Parolni tasdiqlang</label><input id="authRegPass2" type="password" placeholder="Parolni qaytaring" class="finput"/></div>
+            
+            <div id="advokatFields" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+              <h3 style="margin-bottom:10px; font-size:16px;">Advokat ma'lumotlari</h3>
+              <div class="fgroup"><label>Litsenziya raqami (majburiy)</label><input id="authRegLicence" type="text" placeholder="Litsenziya raqami" class="finput"/></div>
+              <div class="fgroup"><label>Tajribasi (yil)</label><input id="authRegExp" type="number" placeholder="Necha yillik tajriba" class="finput" min="0"/></div>
+              <div class="fgroup"><label>Yo‘nalishi</label>
+                <select id="authRegSpec" class="finput">
+                  <option value="jinoyat">Jinoyat huquqi</option>
+                  <option value="fuqarolik">Fuqarolik huquqi</option>
+                  <option value="oila">Oila huquqi</option>
+                  <option value="biznes">Biznes huquqi</option>
+                </select>
+              </div>
+              <div class="fgroup"><label>Hududi (viloyat/tuman)</label><input id="authRegRegion" type="text" placeholder="Masalan: toshkent, samarqand" class="finput"/></div>
+              <div class="fgroup"><label>Narx (konsultatsiya)</label><input id="authRegPrice" type="text" placeholder="Masalan: 50,000 so'm yoki Bepul" class="finput"/></div>
+              <div class="fgroup"><label>Profil rasmi (Emoji)</label><input id="authRegPic" type="text" placeholder="Misol uchun: 👨‍⚖️ yoki 👩‍⚖️" class="finput" value="👨‍⚖️"/></div>
+            </div>
+
             <div class="ferr" id="authRegErr"></div>
             <button class="fsubmit" onclick="doAuthRegister()">Ro'yxatdan o'tish →</button>
             <p class="auth-hint">Hisobingiz bormi? <a onclick="switchAuthTab('login')">Kirish</a></p>
           </div>
+          <script>
+            function toggleAdvokatFields() {
+              const role = document.getElementById('authRegRole').value;
+              document.getElementById('advokatFields').style.display = role === 'lawyer' ? 'block' : 'none';
+            }
+          </script>
           <div id="authLoginForm" style="display:none">
             <h2>Xush kelibsiz!</h2>
             <p class="auth-sub">Telefon raqam va parol bilan kiring</p>

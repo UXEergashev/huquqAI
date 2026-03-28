@@ -11,68 +11,20 @@ const GPT = {
 
 // O'zbekiston Konstitutsiyasi — GPT uchun system prompt
 const SYSTEM_PROMPT = `Siz "Adalat AI" — O'zbekiston Respublikasining huquqiy yordamchisiz.
-Foydalanuvchi savolini O'zbekiston Respublikasi Konstitutsiyasi va qonunlari asosida tahlil qiling.
+Foydalanuvchi savolini O'zbekiston Respublikasi qonunchiligi (Konstitutsiya, barcha kodekslar, qonunlar, farmon va qarorlar) asosida KENG, BATAFSIL va CHUQUR tahlil qiling. Faqat Konstitutsiya emas, balki boshqa barcha huquq sohalarida (soliq, bojxona, ta'lim, tibbiyot, tadbirkorlik va h.k.) bo'lgan savollarga ham TO'LIQ javob bering. Javobingiz juda qisqa bo'lmasin, yetarli darajada ochiqlab tushuntiring.
 
 Qoidalar:
-1. Har doim O'ZBEK tilida javob bering
-2. Javobda ANIQ modda raqamlarini ko'rsating (masalan: "25-modda bo'yicha...")
+1. Har doim O'ZBEK tilida, batafsil, tushunarli va huquqiy jihatdan aniq tilda javob bering.
+2. Javobda qonun yoki kodekslarning (masalan, Oila kodeksi, Mehnat kodeksi, Soliq kodeksi) joriy normalari, moddalarini aniq nomlab va tushuntirib bering.
 3. Javobni quyidagi format bilan yozing:
-   - Avval asosiy tushuntirish (2-3 jumla)
-   - Keyin "📌 Tegishli moddalar" bo'limi
-   - So'ngra "📋 Nima qilish kerak?" - 3-5 qadam
-4. Murakkab masalalarda advokatga murojaat qilishni tavsiya eting
-5. Javob oxirida: "📖 Manba: O'zbekiston Respublikasi Konstitutsiyasi"
+   - Avval masalaning yuridik tahlili va tushuntirishi (kamida 4-5 jumla, iloji boricha to'liqroq yoritib bering)
+   - Keyin "📌 Tegishli qonunchilik va moddalar" bo'limi (moddalar raqami, sarlavhasi)
+   - So'ngra "📋 Nima qilish kerak?" bo'limida muammoni hal qilishning tugal, qadam-baqadam huquqiy yo'riqnomasi (algoritmi)
+4. Muhim: Foydalanuvchi chuqurroq axborot va hujjatlarning to'liq matnini "O'zbekiston Respublikasi Qonunchilik ma'lumotlari milliy bazasi" — yagona davlat portali Lex.uz orqali izlab topib o'qishi mumkinligini aytib o'ting va [Lex.uz](https://lex.uz) havolasini bering.
+5. Murakkab holatlarda yoki sud ishlari, muhim bitimlar tuzilishida malakali advokat ishtiroki shart ekanini tavsiya eting.
+6. Javob oxirida: "📖 Manba: O'zbekiston Respublikasi [tegishli] qonun/kodekslari va Lex.uz milliy qonunchilik bazasi" shaklida bering.
 
-O'zbekiston Konstitutsiyasi asosiy moddalar:
-- 7-modda: Xalq — davlat hokimiyatining birdan-bir manbai
-- 13-modda: Demokratiya umumbashariy tamoyillarga asoslanadi
-- 16-modda: Konstitutsiya oliy yuridik kuchga ega
-- 19-modda: Davlat fuqarolar huquqlarini ta'minlash majburiyatini oladi
-- 20-modda: Huquqlar faqat qonun bilan cheklanishi mumkin
-- 25-modda: Erkinlik va shaxsiy daxlsizlik — hech kim qonunsiz hibsga olinmaydi
-- 26-modda: Aybsizlik prezumpsiyasi — isbotlanmagan aybdor hisoblanmaydi
-- 27-modda: Qiynoq va zo'ravonlik ta'qiqlanadi; o'ziga qarshi guvohlik bermaslik huquqi
-- 28-modda: Erkin harakat qilish va yashash joyini tanlash huquqi
-- 29-modda: So'z, fikr, axborot erkinligi
-- 30-modda: Davlat organlari hujjatlar bilan tanishish imkoniyatini ta'minlaydi
-- 31-modda: Vijdon erkinligi — xohlagan dinga e'tiqod qilish huquqi
-- 32-modda: Davlat boshqaruvida ishtirok etish huquqi
-- 33-modda: Miting va namoyishlar o'tkazish huquqi
-- 36-modda: Mehnat qilish, erkin kasb tanlash; majburiy mehnat ta'qiqlanadi
-- 37-modda: Dam olish huquqi; iş vaqti, haftalik ta'til, yillik to'lov ta'tili
-- 38-modda: Keksayish, mehnat layoqatini yo'qotishda ijtimoiy ta'minot
-- 39-modda: Tibbiy yordam huquqi; davlat muassasalarida bepul tibbiy yordam
-- 40-modda: Bilim olish huquqi; maktabgacha, umumiy o'rta, o'rta maxsus ta'lim bepul
-- 41-modda: Birlashish, kasaba uyushmalari va jamoat tuzish huquqi
-- 44-modda: Sud orqali huquqlarini himoya qilish kafolatlanadi
-- 45-modda: Yuridik yordam olish huquqi; ba'zi hollarda davlat hisobiga bepul
-- 46-modda: Ne bis in idem — ikki marta jinoiy javobgarlikka tortib bo'lmaydi
-- 53-modda: Bozor munosabatlari iqtisodiy rivojlanish asosi
-- 54-modda: Barcha mulk shakllari teng himoyalanadi; xususiy mulk daxlsiz
-- 55-modda: Yer, suv, tabiiy resurslar milliy boylikdir
-- 63-modda: Oila — jamiyatning asosiy bo'g'ini; nikoh ixtiyoriy
-- 64-modda: Ota-onalar farzandlarini voyaga yetguncha boqishi shart
-- 65-modda: Mehnat layoqatini yo'qotgan ota-onalarni boqish farzandlar burchi
-- 76-modda: Oliy Majlis — ikki palatali (Qonunchilik palatasi + Senat)
-- 90-modda: Prezident — davlat boshlig'i va ijroiya hokimiyat rahbari
-- 91-modda: Prezidentlikka: fuqaro, 35 yosh, 10 yil Uzbekistonda, davlat tilini bilish
-- 94-modda: Prezident 7 yillik muddatga saylanadi, 3 muddatdan ko'p bo'lmaydi
-- 117-modda: 18 yoshdan saylov huquqi
-- 118-modda: Saylovlar umumiy, teng, to'g'ridan-to'g'ri, yashirin ovoz bilan
-
-Mehnat Kodeksi asosiy qoidalar:
-- 52-modda: Ishdan bo'shatish faqat asosli sabablar bilan, 2 hafta oldindan ogohlantirish
-- Ish haqi oyda kamida 1 marta to'lanadi
-- Yillik ta'til 15 ish kunidan kam bo'lmaydi
-
-Oila Kodeksi:
-- Ajralishda mulk 50/50 taqsimlanadi (umumiy qoida)
-- Aliment: 1 bola 25%, 2 bola 33%, 3+ bola 50% daromaddan
-
-Ma'muriy javobgarlik:
-- 138-modda: Svetofor talablarini buzish — BHM dan 1 qismi jarima
-
-Foydalanuvchi savolini KENG va ANIQ tahlil qiling, hatto savol noaniq bo'lsa ham kontekstdan kelib chiqib eng ehtimoliy huquqiy masalani tushuntiring.`;
+Qo'shimcha tayanch qoidalar vizual tarzda yaxshi ko'rinishi uchun Markdown formatidan foydalanib ajratishingizni so'rayman (bullet pointlar va qalin harflar bilan). Agar savol noaniq bo'lsa, taxminiy turdosh huquqiy ehtimolliklarni keltirgan holda har tomonlama yoritib berishga harakat qiling.`;
 
 // ===== AUTH STATE =====
 const AUTH = {
@@ -171,7 +123,7 @@ function quickAsk(q) {
 }
 
 // ===== LAWYERS DATA =====
-const LAWYERS = [
+const DEFAULT_LAWYERS = [
   { id:1, emoji:'👨‍💼', name:'Akbar Yusupov',    spec:'Mehnat Huquqi',    specKey:'mehnat',  region:'toshkent', loc:'Toshkent', rating:4.9, cases:312, exp:12, reviews:87,  price:'Bepul konsultatsiya', phone:'+998 90 123 45 67', tags:['Mehnat shartnomasi','Ishdan bo\'shatish','Ish haqi'], about:'Mehnat nizolari va ish haqi to\'lovlari bo\'yicha 12 yillik tajriba. 300+ muvaffaqiyatli ish.' },
   { id:2, emoji:'👩‍⚖️', name:'Zulfiya Karimova', spec:'Oilaviy Huquq',    specKey:'oila',    region:'samarqand',loc:'Samarqand',rating:5.0, cases:198, exp:8,  reviews:64,  price:'50,000 so\'m/konsultatsiya', phone:'+998 90 234 56 78', tags:['Ajralish','Aliment','Vasiyat'], about:'Oilaviy nizolar, ajralish va aliment masalalarida tajribali advokat.' },
   { id:3, emoji:'👨‍💼', name:'Bobur Toshmatov',  spec:'Biznes Huquqi',   specKey:'biznes',  region:'toshkent', loc:'Toshkent', rating:4.8, cases:425, exp:15, reviews:112, price:'Birinchi konsultatsiya bepul', phone:'+998 90 345 67 89', tags:['IE va MChJ','Shartnomalar','Intellektual mulk'], about:'Kompaniya tashkil etish va korporativ huquq sohasida yetakchi mutaxassis.' },
@@ -181,6 +133,21 @@ const LAWYERS = [
   { id:7, emoji:'👨‍💼', name:'Jamshid Pulatov',  spec:'Ma\'muriy Huquq',  specKey:'mamuriy', region:'andijon',  loc:'Andijon',  rating:4.8, cases:201, exp:11, reviews:67,  price:'40,000 so\'m/konsultatsiya', phone:'+998 90 789 01 23', tags:['Davlat organlari','Jarimalar','Litsenziya'], about:'Davlat organlari bilan nizolar va ma\'muriy huquq bo\'yicha tajribali advokat.' },
   { id:8, emoji:'👩‍⚖️', name:'Shahnoza Mirova',  spec:'Mehnat Huquqi',    specKey:'mehnat',  region:'samarqand',loc:'Samarqand',rating:4.7, cases:178, exp:7,  reviews:55,  price:'25,000 so\'m/konsultatsiya', phone:'+998 90 890 12 34', tags:['Ish haqi','Ta\'til huquqi','Diskriminatsiya'], about:'Mehnat diskriminatsiyasi va xotin-qizlar huquqlari bo\'yicha ixtisoslashgan.' },
 ];
+
+function getLawyers() {
+  try {
+    const stored = localStorage.getItem('adalat_lawyers');
+    if (stored) return JSON.parse(stored);
+  } catch(e) {}
+  return DEFAULT_LAWYERS;
+}
+function saveLawyer(l) {
+  const list = getLawyers();
+  list.unshift(l);
+  localStorage.setItem('adalat_lawyers', JSON.stringify(list));
+  LAWYERS = list;
+}
+let LAWYERS = getLawyers();
 
 // ===== RENDER LAWYERS =====
 function renderLawyers(list) {
@@ -338,12 +305,22 @@ function doAuthLogin() {
 }
 
 function doAuthRegister() {
+  const role  = document.getElementById('authRegRole').value;
   const name  = document.getElementById('authRegName').value.trim();
   const phone = document.getElementById('authRegPhone').value.trim();
   const pass  = document.getElementById('authRegPass').value;
   const pass2 = document.getElementById('authRegPass2').value;
   const err   = document.getElementById('authRegErr');
   err.textContent = '';
+  
+  // Lawyer form fields
+  const licence = document.getElementById('authRegLicence')?.value.trim();
+  const exp = document.getElementById('authRegExp')?.value.trim();
+  const specKey = document.getElementById('authRegSpec')?.value;
+  const region = document.getElementById('authRegRegion')?.value.trim();
+  const price = document.getElementById('authRegPrice')?.value.trim();
+  const pic = document.getElementById('authRegPic')?.value.trim() || '👨‍⚖️';
+
   if (!name)           { err.textContent = 'Ismingizni kiriting'; return; }
   if (name.length < 2) { err.textContent = 'Ism kamida 2 ta harf bo\'lsin'; return; }
   if (!phone)          { err.textContent = 'Telefon raqam kiriting'; return; }
@@ -351,12 +328,17 @@ function doAuthRegister() {
   if (digits.length < 9) { err.textContent = 'To\'g\'ri telefon raqam kiriting'; return; }
   if (pass.length < 6)   { err.textContent = 'Parol kamida 6 ta belgi bo\'lsin'; return; }
   if (pass2 && pass !== pass2) { err.textContent = 'Parollar mos kelmadi'; return; }
+
+  if (role === 'lawyer') {
+    if (!licence) { err.textContent = 'Litsenziya raqamini kiriting'; return; }
+  }
+
   const users = getUsers();
   const normalizedPhone = phone.replace(/\s/g, '');
   if (users.find(x => x.phone.replace(/\s/g,'') === normalizedPhone)) {
     err.textContent = '❌ Bu raqam allaqachon ro\'yxatdan o\'tgan'; return;
   }
-  _regData = { name, phone: normalizedPhone, pass };
+  _regData = { role, name, phone: normalizedPhone, pass, advokatData: {licence, exp, specKey, region, price, pic} };
   document.getElementById('authRegForm').style.display = 'none';
   document.getElementById('authOTPForm').style.display = 'block';
   document.getElementById('authOTPPhone').textContent = normalizedPhone;
@@ -382,13 +364,40 @@ function doAuthVerifyOTP() {
     document.getElementById('authOtp0').focus();
     return;
   }
-  const newUser = { name: _regData.name, phone: _regData.phone, pass: _regData.pass, plan: 'free', createdAt: Date.now() };
+  const isLawyer = _regData.role === 'lawyer';
+  const newUser = { name: _regData.name, phone: _regData.phone, pass: _regData.pass, plan: 'free', role: _regData.role, createdAt: Date.now() };
+
+  if (isLawyer) {
+    const specs = { jinoyat: 'Jinoiy Huquq', fuqarolik: 'Fuqarolik Huquqi', oila: 'Oilaviy Huquq', biznes: 'Biznes Huquqi' };
+    const specName = specs[_regData.advokatData.specKey] || _regData.advokatData.specKey;
+    
+    const newLawyer = {
+      id: Date.now(),
+      emoji: _regData.advokatData.pic,
+      name: _regData.name,
+      spec: specName,
+      specKey: _regData.advokatData.specKey,
+      region: _regData.advokatData.region.toLowerCase(),
+      loc: _regData.advokatData.region || 'Noma\'lum hudud',
+      rating: 5.0,
+      cases: 0,
+      exp: parseInt(_regData.advokatData.exp) || 0,
+      reviews: 0,
+      price: _regData.advokatData.price || 'Kelishilgan narx',
+      phone: _regData.phone,
+      tags: ['Yangi advokat'],
+      about: `Litsenziya raqami: ${_regData.advokatData.licence}. ${specName} bo\'yicha advokat.`
+    };
+    saveLawyer(newLawyer);
+    newUser.lawyerId = newLawyer.id;
+  }
+
   const users = getUsers();
   users.push(newUser);
   saveUsers(users);
   AUTH.save(newUser);
   updateNav();
-  toast(`🎉 Ro'yxatdan o'tdingiz! Xush kelibsiz, ${newUser.name}!`);
+  toast(`🎉 Ro\'yxatdan o\'tdingiz! Xush kelibsiz, ${newUser.name}!${isLawyer ? ' Advokat sifatida ro\'yxatdan o\'tdingiz!' : ''}`);
   goPage('chat');
 }
 
@@ -493,10 +502,10 @@ const TOPICS = {
     })
   },
   jinoyat: {
-    kw: ['jinoyat','jinoiy','qamoq','politsiya','tergovchi','ayblov','hibsga','ushlab olindi','arrest','sud','jazoga'],
+    kw: ['jinoyat','jinoiy','qamoq','politsiya','tergovchi','aybl','hibsga','ushlab','arrest','sud','jazo', 'zo\'ravon', 'pichoq', 'o\'g\'ri', 'kaltakla', 'urish'],
     resp: () => ({
-      text: `⚠️ **JINOIY HUQUQ — O'zbekiston Konstitutsiyasi:**\n\n📌 **25-modda:** Hech kim qonunda belgilangan tartibdan boshqacha usulda **hibsga olinishi yoki qamoqqa olinishi mumkin emas.** Har kim erkinlik va shaxsiy daxlsizlik huquqiga ega.\n\n📌 **26-modda:** **Aybsizlik prezumpsiyasi** — shaxs aybdorligi sudda isbotlanmagan ekan, u **aybsiz deb hisoblanadi.**\n\n📌 **27-modda:** Hech kim **qiynoqqa, zo'ravonlikka** yoki insoniy qadr-qimmatni kamsituvchi muomalaga tortilishi mumkin emas. **O'zingizga qarshi guvohlik bermaslik huquqingiz bor!**\n\n📌 **45-modda:** Har kimning **yuridik yordam olish huquqi** kafolatlanadi. Qonunda nazarda tutilgan hollarda bepul.`,
-      roadmap: ['⚡ DARHOL advokat so\'rang — bu huquqingiz (45-modda)','Hech narsa imzolamang advokatsiz','O\'zingizga qarshi guvohlik bermang (27-modda)','Yaqinlaringizni xabardor qiling','Barcha dalillarni saqlang'],
+      text: `⚠️ **JINOIY HUQUQ VA JINOYAT PROTSESSI — O'zbekiston Respublikasi Qonunchiligi:**\n\nSiz jinoyat, zo'ravonlik yoki asossiz ayblov bo'yicha murojaat qildingiz. O'zbekiston qonunchiligida huquqlaringiz qanday himoyalanganini batafsil tushuntiramiz:\n\n📌 **25-modda (Konstitutsiya):** Hech kim qonunda belgilangan tartibdan boshqacha usulda **hibsga olinishi, qamoqqa olinishi yoki erkinlikdan mahrum etilishi mumkin emas.** Har kim erkinlik va shaxsiy daxlsizlik huquqiga ega.\n\n📌 **26-modda:** **Aybsizlik prezumpsiyasi** — Shaxs aybdorligi sudning qonuniy kuchga kirgan hukmi bilan isbotlanmagan ekan, u **aybsiz deb hisoblanadi.** Sizni ayblashayotgan bo'lsa, avvalo jinoyatingiz dalillar bilan isbotlanishi shart.\n\n📌 **27-modda:** Hech kim o'ziga va yaqin qarindoshlariga qarshi guvohlik berishga majbur emas. Hech kim **qiynoqqa, zo'ravonlikka** yoki qadr-qimmatni kamsituvchi muomalaga tortilishi mumkin emas.\n\n📌 **45-modda:** Har kimning cheklanmagan tarzda **yuridik yordam olish (advokat yollash) huquqi** bor. Jinoiy ishda advokat ishtirok etishi majburiy hollari qonunda aniq belgilangan.\n\n*Qo'shimcha ma'lumot:* Agar sizga nisbatan asossiz ravishda zo'ravonlik yoki ayblov qo'yilayotgan bo'lsa, siz sukut saqlash huquqiga (Miranda qoidasi kabi) to'liq egasiz va advokatingiz yetib kelmaguncha ko'rsatma berishdan bosh tortishingiz mumkin.`,
+      roadmap: ['⚡ DARHOL advokat bilan bog\'laning — yuridik ishtirok sizning qonuniy huquqingiz (45-modda)', 'Hech qanday qog\'oz yoki bayonnomalarni advokatsiz o\'qib chiqmasdan imzolamang', 'Sukut saqlang. O\'zingizga qarshi guvohlik bermang (27-modda)', 'Yaqinlaringizga xabar bering, qaerda va qanday muassasada ekanligingizni ayting', 'Har bir majburlash va zo\'ravonlik bo\'yicha prokuraturaga shikoyat qiling! Barcha olingan tan jarohatlarini ekspertiza qildiring'],
       lawType: 'jinoyat', needLawyer: true, urgent: true,
       articles: [25, 26, 27, 45]
     })
@@ -568,8 +577,9 @@ function getResp(text) {
   if (topic) return { ...TOPICS[topic].resp(), topic };
 
   return {
-    text: `**Savolingizni tushundim.**\n\nAniqroq yordam berish uchun bir nechta variant tanlang yoki aniq modda raqamini kiriting:`,
-    roadmap: null, lawType: null, needLawyer: false, topic: null,
+    text: `**Savolingiz qabul qilindi.**\n\nSiz kiritgan masalada nafaqat asosiy moddalar, balki O'zbekiston Respublikasining boshqa qonun osti hujjatlari (kodekslar, vazirlar mahkamasi qarorlari va idoraviy normativ hujjatlar) ham ishtirok etishi mumkin.\n\nTo'liq, batafsil va rasmiy huquqiy javob topish uchun **O'zbekiston Respublikasi Qonunchilik ma'lumotlari milliy bazasi — [Lex.uz](https://lex.uz/)** portalidan foydalanishingizni qat'iy tavsiya etamiz. \n\nYoki aniqroq yordam berishim uchun, quyidagi huquq sohalaridan birini tanlang yoxud kalit so'zni kiriting:`,
+    roadmap: ["Lex.uz portalini ochish va izlash", "O'z muammongizga tegishli hujjatni izlab topish", "Adalat AI'dagi mavjud yurist-advokatlardan maslahat olish"], 
+    lawType: null, needLawyer: false, topic: null,
     showChips: true
   };
 }
